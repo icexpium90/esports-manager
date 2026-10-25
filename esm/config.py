@@ -9,6 +9,7 @@ import json
 ROOT_DIR = Path(__file__).parent.parent
 ESM_DIR = ROOT_DIR / "esm"
 FRONTEND_DIR = ROOT_DIR / "frontend"
+DEFAULT_PORT = 1212
 
 
 @dataclass
@@ -18,11 +19,12 @@ class Config:
     api_url: str = ""
 
     def get_default_config(self) -> dict[str, str]:
-        port = 8000
+        # Port par défaut : 1212 (modifiable avec la variable d'environnement ESM_PORT)
+        port = int(os.environ.get("ESM_PORT", DEFAULT_PORT))
         return {
             "database_url": "sqlite+aiosqlite:///" + os.path.join(ESM_DIR, "app.db"),
             "port": port,
-            "api_url": "http://localhost:{port}",
+            "api_url": f"http://localhost:{port}",
         }
 
     def get_config(self) -> dict[str, str]:

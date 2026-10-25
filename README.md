@@ -93,69 +93,28 @@ The UI is currently being reworked with a modern web-based interface. Here are s
 - Python 3.10 or higher
 - Git
 
-### Development Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/esports-manager/esports-manager.git
-   cd esports-manager
-   ```
-
-1. **Set up the environment and install dependencies**
-   ```bash
-   uv venv .venv
-   uv sync
-   ```
-
-1. **Activate the virtual environment**
-   - On Linux/macOS:
-     ```bash
-     source .venv/bin/activate
-     ```
-   - On Windows:
-     ```bash
-     .venv\Scripts\activate
-     ```
-
-1. **Initialize the database**
-   ```bash
-   uv run python scripts/init_db.py
-   ```
-
-1. **Run the development server**
-   ```bash
-   uv run uvicorn dev:app --reload
-   ```
-
-
-
-
-For more detailed setup instructions, including troubleshooting tips, refer to the [CONTRIBUTING.md](CONTRIBUTING.md#development-environment-setup) document.
-
-## Getting Started
-
-### Running the Game
-
-To run the main application:
-```bash
-uv run python esm.py
-```
-
-Access the web interface at:
-- Frontend: http://localhost:8000
-- API documentation: http://localhost:8000/docs
-
-### Development Mode
-
-For frontend development with hot reloading of styles:
+### Lancement rapide (sans uv)
 
 ```bash
-uv run tailwindcss -i frontend/static/css/input.css -o frontend/static/css/tailwind.css --watch
+git clone https://github.com/icexpium90/esports-manager.git
+cd esports-manager
+python start.py          # Windows : double-clic sur start.bat / Linux-macOS : ./start.sh
 ```
 
+`start.py` crée le `.venv`, installe les dépendances (`requirements.txt`), initialise la base,
+compile le CSS et ouvre le jeu sur **http://localhost:1212** (API : http://localhost:1212/docs).
+
+Options utiles :
+
 ```bash
-uv run uvicorn dev:app --reload
+python start.py --port 1313      # autre port (ou variable ESM_PORT)
+python start.py --dev            # rechargement automatique pendant le développement
+python start.py --no-browser     # sur un serveur
 ```
+
+Version fenêtre de bureau (optionnelle) : `pip install -r requirements-desktop.txt` puis `python esm.py`.
+
+Mise en ligne sur un domaine (manager.luostatis.fr) : voir [deploy/README.md](deploy/README.md).
 
 ## Contributing
 

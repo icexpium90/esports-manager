@@ -1,0 +1,4 @@
+# Alternative à nginx : Caddy gère le HTTPS automatiquement
+manager.luostatis.fr {
+    reverse_proxy 127.0.0.1:1212
+}

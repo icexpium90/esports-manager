@@ -1,4 +1,3 @@
 #!/bin/bash
-
-uv run tailwindcss -i ./frontend/static/css/input.css -o ./frontend/static/css/tailwind.css --minify
-uv run esm.py
+cd "$(dirname "$0")"
+python3 start.py "$@"

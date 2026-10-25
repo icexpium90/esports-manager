@@ -5,7 +5,12 @@ import webview
 import uvicorn
 import threading
 from esm.app import create_api
+from esm.config import Config
 from frontend import create_frontend
+
+config = Config()
+config.load_config()
+PORT = int(config.port)
 
 
 def get_app():
@@ -16,7 +21,7 @@ def get_app():
 
 def start_server():
     app = get_app()
-    uvicorn.run(app, host="0.0.0.0", port=8125, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="info")
 
 
 if __name__ == "__main__":
@@ -25,7 +30,7 @@ if __name__ == "__main__":
 
     webview.create_window(
         "eSports Manager",
-        "http://localhost:8125/",
+        f"http://localhost:{PORT}/",
         width=1200,
         height=800,
         resizable=True,

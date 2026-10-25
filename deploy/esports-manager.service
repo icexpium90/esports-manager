@@ -1,0 +1,16 @@
+# Service systemd : lance eSports Manager au démarrage du serveur
+# À copier dans /etc/systemd/system/esports-manager.service
+# (adapter User et WorkingDirectory)
+[Unit]
+Description=eSports Manager (manager.luostatis.fr)
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/opt/esports-manager
+ExecStart=/usr/bin/python3 /opt/esports-manager/start.py --host 127.0.0.1 --port 1212 --no-browser
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
