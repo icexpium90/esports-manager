@@ -39,7 +39,20 @@ Logs : `journalctl -u esports-manager -f`
 
 ## 4. Reverse proxy
 
-### Option A : nginx (si nginx est déjà installé)
+### Option A : Apache (si Apache est déjà installé)
+
+```bash
+sudo a2enmod proxy proxy_http proxy_wstunnel headers rewrite
+sudo cp deploy/apache-manager.luostatis.fr.conf /etc/apache2/sites-available/manager.luostatis.fr.conf
+sudo a2ensite manager.luostatis.fr
+sudo apache2ctl configtest && sudo systemctl reload apache2
+
+# HTTPS gratuit avec Let's Encrypt
+sudo apt install -y certbot python3-certbot-apache
+sudo certbot --apache -d manager.luostatis.fr
+```
+
+### Option B : nginx (si nginx est déjà installé)
 
 ```bash
 sudo cp deploy/nginx-manager.luostatis.fr.conf /etc/nginx/sites-available/manager.luostatis.fr
@@ -51,7 +64,7 @@ sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d manager.luostatis.fr
 ```
 
-### Option B : Caddy (HTTPS automatique)
+### Option C : Caddy (HTTPS automatique)
 
 Ajoute le contenu de `deploy/Caddyfile` dans `/etc/caddy/Caddyfile`, puis :
 
