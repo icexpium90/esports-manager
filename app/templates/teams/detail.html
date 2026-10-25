@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ team.name }}{% endblock %}
+{% block content %}
+{% set labels = GAME_STATS[team.game] %}
+<div class="top">
+  <div><div class="small">{{ m.game(team.game) }}{% if not team.active %} · <span class="muted">archivée</span>{% endif %}</div>
+    <h1>{{ team.name }}</h1>
+    {% if team.description %}<div class="sub">{{ team.description }}</div>{% endif %}</div>
+  {% if user.role != 'joueur' %}
+  <div class="actions">
+    <a class="btn" href="/teams/{{ team.id }}/edit">Modifier</a>
+    <a class="btn" href="/members/new?team={{ team.id }}">+ Membre</a>
+    <a class="btn primary" href="/calendar/new?team={{ team.id }}">+ Événement</a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="grid g3" style="margin-bottom:16px">
+  <div class="card kpi"><div class="label">Matchs officiels</div><div class="value">{{ m.record(record) }}</div></div>
+  <div class="card kpi"><div class="label">Scrims</div><div class="value">{{ m.record(scrim_record) }}</div></div>
+  <div class="card kpi"><div class="label">Winrate officiel</div><div class="value">
+    {% set total = record[0] + record[1] + record[2] %}{{ ((record[0] / total * 100)|round|int ~ ' %') if total else '—' }}</div></div>
+</div>
+
+<div class="card flush" style="margin-bottom:16px">
+  <div class="head"><h2>Roster</h2></div>
+  {% if members %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Pseudo</th><th>Rôle</th><th>Poste</th><th>Statut</th>
+      <th class="num">Matchs</th><th class="num">{{ labels[0] }}</th><th class="num">{{ labels[1] }}</th><th class="num">{{ labels[2] }}</th><th class="num">{{ labels[3] }}</th><th class="num">Note</th><th class="num">MVP</th></tr></thead>
+    <tbody>
+    {% for p in members %}{% set a = averages.get(p.id) %}
+      <tr style="{{ 'opacity:.55' if p.status == 'inactif' }}">
+        <td><a href="/members/{{ p.id }}"><strong>{{ p.nickname }}</strong></a>{% if p.first_name or p.last_name %}<div class="small muted">{{ p.first_name or '' }} {{ p.last_name or '' }}</div>{% endif %}</td>
+        <td>{{ MEMBER_KINDS[p.kind] }}</td>
+        <td>{{ p.game_role or '—' }}</td>
+        <td>{{ m.status_badge(p.status) }}</td>
+        {% if a %}
+        <td class="num">{{ a.games }}</td><td class="num">{{ ('%g' % a.stat1) if a.stat1 is not none else '—' }}</td><td class="num">{{ ('%g' % a.stat2) if a.stat2 is not none else '—' }}</td>
+        <td class="num">{{ ('%g' % a.stat3) if a.stat3 is not none else '—' }}</td><td class="num">{{ ('%g' % a.score) if a.score is not none else '—' }}</td>
+        <td class="num">{{ ('%g' % a.rating) if a.rating is not none else '—' }}</td><td class="num">{{ a.mvp }}</td>
+        {% else %}<td class="num muted" colspan="7">—</td>{% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  <p class="small muted" style="padding:0 18px 14px">Stats : moyennes par match (matchs officiels et scrims).</p>
+  {% else %}<div class="empty">Aucun membre dans cette équipe.</div>{% endif %}
+</div>
+
+<div class="grid g2">
+  <div class="card">
+    <div class="head"><h2>À venir</h2></div>
+    {% if upcoming %}<ul class="list">{% for e in upcoming %}
+      <li><div><a href="/calendar/{{ e.id }}"><strong>{{ m.event_title(e) }}</strong></a><div class="small muted">{{ e.starts_at|dt }}</div></div>{{ m.kind_badge(e.kind) }}</li>
+    {% endfor %}</ul>{% else %}<div class="empty">Rien de prévu.</div>{% endif %}
+  </div>
+  <div class="card">
+    <div class="head"><h2>Derniers résultats</h2></div>
+    {% if played %}<ul class="list">{% for e in played %}
+      <li><div><a href="/calendar/{{ e.id }}"><strong>{{ m.event_title(e) }}</strong></a><div class="small muted">{{ e.starts_at|d }} · {{ EVENT_KINDS[e.kind] }}{% if e.competition %} · {{ e.competition }}{% endif %}</div></div>{{ m.result(e) }}</li>
+    {% endfor %}</ul>{% else %}<div class="empty">Aucun résultat.</div>{% endif %}
+  </div>
+</div>
+{% endblock %}

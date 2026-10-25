@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Finances {{ year }}{% endblock %}
+{% block content %}
+<div class="top">
+  <div><h1>Finances {{ year }}</h1><div class="sub">Trésorerie totale : <strong class="{{ 'pos' if balance >= 0 else 'neg' }}">{{ balance|money }}</strong></div></div>
+  <div class="actions">
+    <a class="btn" href="/finances/export.csv?year={{ year }}">Export CSV</a>
+    <a class="btn" href="/finances/new?direction=recette">+ Recette</a>
+    <a class="btn primary" href="/finances/new?direction=depense">+ Dépense</a>
+  </div>
+</div>
+<form class="filters" method="get" style="margin-bottom:14px" onchange="this.submit()">
+  <select name="year">{% for y in years %}<option value="{{ y }}" {{ 'selected' if y == year }}>{{ y }}</option>{% endfor %}</select>
+  <select name="team"><option value="">Toute la structure</option>
+    {% for t in teams.values() %}<option value="{{ t.id }}" {{ 'selected' if team == t.id }}>{{ t.name }}</option>{% endfor %}</select>
+</form>
+
+<div class="grid g3" style="margin-bottom:16px">
+  <div class="card kpi"><div class="label">Recettes {{ year }}</div><div class="value pos">{{ income|money }}</div></div>
+  <div class="card kpi"><div class="label">Dépenses {{ year }}</div><div class="value neg">{{ expense|money }}</div></div>
+  <div class="card kpi"><div class="label">Résultat {{ year }}</div><div class="value {{ 'pos' if income - expense >= 0 else 'neg' }}">{{ (income - expense)|money }}</div></div>
+</div>
+
+<div class="grid g3" style="margin-bottom:16px">
+  <div class="card span2">
+    <div class="head"><h2>Par mois</h2><div class="legend"><span style="--k:var(--ok)"><i></i>Recettes</span><span style="--k:var(--bad)"><i></i>Dépenses</span></div></div>
+    <div class="bars">
+      {% for mo in months %}
+      <div class="m" title="{{ MONTHS_FULL[loop.index0] }} : +{{ mo.income|money }} / −{{ mo.expense|money }}">
+        <div class="pair">
+          <div class="b in" style="height:{{ (mo.income / peak * 100)|round(1) }}%"></div>
+          <div class="b out" style="height:{{ (mo.expense / peak * 100)|round(1) }}%"></div>
+        </div>
+        <div class="lbl">{{ MONTHS_FULL[loop.index0][:3] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="head"><h2>Par catégorie</h2></div>
+    {% for direction, title in [('recette', 'Recettes'), ('depense', 'Dépenses')] %}
+      {% if by_cat[direction] %}
+      <h3 class="muted" style="margin:8px 0 2px">{{ title }}</h3>
+      <ul class="list">{% for cat, total in by_cat[direction]|dictsort(by='value', reverse=true) %}
+        <li class="small"><span>{{ TRANSACTION_CATEGORIES[direction].get(cat, cat) }}</span><strong class="{{ 'pos' if direction == 'recette' else 'neg' }}">{{ total|money }}</strong></li>
+      {% endfor %}</ul>
+      {% endif %}
+    {% endfor %}
+    {% if not by_cat.recette and not by_cat.depense %}<div class="empty">Aucune opération.</div>{% endif %}
+  </div>
+</div>
+
+<div class="card flush">
+  <div class="head"><h2>Opérations</h2></div>
+  {% if txs %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Date</th><th>Libellé</th><th>Catégorie</th><th>Équipe</th><th class="num">Montant</th><th></th></tr></thead>
+    <tbody>{% for t in txs %}
+      <tr><td class="nowrap">{{ t.date|d }}</td>
+        <td><strong>{{ t.label }}</strong>{% if t.sponsor_id and sponsors.get(t.sponsor_id) %} <span class="small muted">· {{ sponsors[t.sponsor_id].name }}</span>{% endif %}{% if t.notes %}<div class="small muted">{{ t.notes }}</div>{% endif %}</td>
+        <td>{{ TRANSACTION_CATEGORIES[t.direction].get(t.category, t.category) }}</td>
+        <td>{{ teams[t.team_id].name if t.team_id and teams.get(t.team_id) else '—' }}</td>
+        <td class="num nowrap {{ 'pos' if t.direction == 'recette' else 'neg' }}"><strong>{{ '+' if t.direction == 'recette' else '−' }}{{ t.amount|money }}</strong></td>
+        <td class="right"><a class="btn sm" href="/finances/{{ t.id }}/edit">Modifier</a></td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">Aucune opération en {{ year }}.</div>{% endif %}
+</div>
+{% endblock %}

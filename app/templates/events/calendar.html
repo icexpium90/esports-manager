@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Calendrier{% endblock %}
+{% block content %}
+{% set q = ('&team=' ~ filters.team if filters.team else '') ~ ('&kind=' ~ filters.kind if filters.kind else '') %}
+<div class="top">
+  <div><h1>{{ MONTHS_FULL[month - 1]|capitalize }} {{ year }}</h1></div>
+  <div class="actions">
+    <a class="btn" href="/calendar?year={{ prev_m[0] }}&month={{ prev_m[1] }}{{ q }}">‹</a>
+    <a class="btn" href="/calendar?{{ q[1:] }}">Aujourd'hui</a>
+    <a class="btn" href="/calendar?year={{ next_m[0] }}&month={{ next_m[1] }}{{ q }}">›</a>
+    <a class="btn" href="/calendar/list">Liste</a>
+    {% if user.role != 'joueur' %}<a class="btn primary" href="/calendar/new">+ Événement</a>{% endif %}
+  </div>
+</div>
+<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+  <form class="filters" method="get" onchange="this.submit()">
+    <input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}">
+    <select name="team"><option value="">Toutes les équipes</option>
+      {% for t in teams.values() if t.active %}<option value="{{ t.id }}" {{ 'selected' if filters.team == t.id }}>{{ t.name }}</option>{% endfor %}</select>
+    <select name="kind">{{ m.options(EVENT_KINDS, filters.kind or '', 'Tous les types') }}</select>
+  </form>
+  <div class="legend">{% for k, v in EVENT_KINDS.items() %}<span class="kind-{{ k }}"><i></i>{{ v }}</span>{% endfor %}</div>
+</div>
+<div class="card flush">
+  <div class="cal">
+    {% for dname in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'] %}<div class="dow">{{ dname }}</div>{% endfor %}
+    {% for week in weeks %}{% for day in week %}
+      <div class="day {{ 'out' if day.month != month }} {{ 'today' if day == today() }}">
+        <div class="n"><span>{{ day.day }}</span>{% if user.role != 'joueur' %}<a class="add" href="/calendar/new?day={{ day }}{{ '&team=' ~ filters.team if filters.team }}" title="Ajouter">+</a>{% endif %}</div>
+        {% for e in by_day.get(day, []) %}
+          <a class="ev kind-{{ e.kind }}" href="/calendar/{{ e.id }}" title="{{ EVENT_KINDS[e.kind] }} · {{ m.event_title(e) }}{% if e.team_id %} · {{ teams[e.team_id].name }}{% endif %}">
+            <span class="t">{{ e.starts_at.strftime('%H:%M') }}</span> <b>{{ m.event_title(e) }}</b>{% if e.score_us is not none and e.score_them is not none %} · {{ e.score_us }}-{{ e.score_them }}{% endif %}
+          </a>
+        {% endfor %}
+      </div>
+    {% endfor %}{% endfor %}
+  </div>
+</div>
+{% endblock %}

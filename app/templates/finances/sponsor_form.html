@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ 'Nouveau sponsor' if is_new else item.name }}{% endblock %}
+{% block content %}
+<div class="top"><h1>{{ 'Nouveau sponsor' if is_new else 'Modifier ' ~ item.name }}</h1></div>
+<div class="card" style="max-width:760px">
+  <form method="post" class="stack">
+    <div class="fields">
+      <label>Nom<input name="name" value="{{ item.name or '' }}" required autofocus></label>
+      <label>Statut<select name="status">{{ m.options(SPONSOR_STATUS, item.status) }}</select></label>
+      <label>Contact<input name="contact_name" value="{{ item.contact_name or '' }}"></label>
+      <label>E-mail du contact<input type="email" name="contact_email" value="{{ item.contact_email or '' }}"></label>
+      <label>Montant annuel (€)<input name="yearly_amount" inputmode="decimal" value="{{ '%g' % item.yearly_amount }}"></label>
+      <div></div>
+      <label>Début<input type="date" name="start_date" value="{{ item.start_date or '' }}"></label>
+      <label>Fin<input type="date" name="end_date" value="{{ item.end_date or '' }}"></label>
+      <label class="full">Contreparties <span class="hint">logo maillot, posts réseaux, codes promo…</span><textarea name="deliverables">{{ item.deliverables or '' }}</textarea></label>
+      <label class="full">Notes<textarea name="notes">{{ item.notes or '' }}</textarea></label>
+    </div>
+    <div class="form-actions">
+      <a class="btn" href="/finances/sponsors">Annuler</a>
+      <button class="btn primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

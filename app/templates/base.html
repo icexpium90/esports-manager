@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ ORG_NAME }}{% endblock %} · {{ ORG_NAME }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236366f1'/><text x='16' y='22' font-size='16' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='700'>{{ ORG_NAME[:1] }}</text></svg>">
+</head>
+<body>
+{% if user %}
+<div class="shell">
+  <nav class="side">
+    <div class="brand"><span class="brand-mark">{{ ORG_NAME[:1] }}</span>{{ ORG_NAME }}</div>
+    {% set nav = [
+      ("/", "◧", "Tableau de bord", none),
+      ("/teams", "◆", "Équipes", none),
+      ("/members", "☺", "Membres", none),
+      ("/calendar", "▦", "Calendrier", none),
+      ("/finances", "€", "Finances", "staff"),
+      ("/finances/sponsors", "★", "Sponsors", "staff"),
+      ("/users", "⚙", "Comptes", "admin"),
+    ] %}
+    {% for href, ico, label, need in nav %}
+      {% if not need or (need == "staff" and user.role in ("admin", "staff")) or (need == "admin" and user.role == "admin") %}
+        {% set on = (href == "/" and path == "/") or (href != "/" and path.startswith(href) and not (href == "/finances" and path.startswith("/finances/sponsors"))) %}
+        <a href="{{ href }}" class="{{ 'on' if on }}"><span class="ico">{{ ico }}</span>{{ label }}</a>
+      {% endif %}
+    {% endfor %}
+    <div class="spacer"></div>
+    <a href="/account"><span class="ico">⚿</span>Mon compte</a>
+    <a href="/logout"><span class="ico">⎋</span>Déconnexion</a>
+    <div class="who"><strong>{{ user.name }}</strong>{{ USER_ROLES[user.role] }}</div>
+  </nav>
+  <main>
+    {% for f in flashes %}<div class="flash {{ f.kind }}">{{ f.message }}</div>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}
+  {% block auth %}{% endblock %}
+{% endif %}
+</body>
+</html>

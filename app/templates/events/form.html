@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ 'Nouvel événement' if is_new else 'Modifier l\'événement' }}{% endblock %}
+{% block content %}
+<div class="top"><h1>{{ 'Nouvel événement' if is_new else 'Modifier l\'événement' }}</h1></div>
+<div class="card" style="max-width:820px">
+  <form method="post" class="stack">
+    <div class="fields">
+      <label>Type<select name="kind">{{ m.options(EVENT_KINDS, item.kind) }}</select></label>
+      <label>Équipe<select name="team_id"><option value="">Toute la structure</option>
+        {% for t in teams %}<option value="{{ t.id }}" {{ 'selected' if item.team_id == t.id }}>{{ t.name }} ({{ GAMES[t.game] }})</option>{% endfor %}</select></label>
+      <label>Adversaire <span class="hint">pour un match ou un scrim</span><input name="opponent" value="{{ item.opponent or '' }}"></label>
+      <label>Titre <span class="hint">si pas d'adversaire (ex. Review VOD)</span><input name="title" value="{{ item.title or '' }}"></label>
+      <label>Début<input type="datetime-local" name="starts_at" value="{{ item.starts_at.strftime('%Y-%m-%dT%H:%M') }}" required></label>
+      <label>Fin<input type="datetime-local" name="ends_at" value="{{ item.ends_at.strftime('%Y-%m-%dT%H:%M') if item.ends_at else '' }}"></label>
+      <label>Compétition <span class="hint">ex. VCL France, Open 10…</span><input name="competition" value="{{ item.competition or '' }}"></label>
+      <label>Lieu ou lien<input name="location" value="{{ item.location or '' }}" placeholder="En ligne, salle, lien Discord…"></label>
+      <label class="full">Notes<textarea name="notes">{{ item.notes or '' }}</textarea></label>
+    </div>
+    <div class="form-actions">
+      <a class="btn" href="{{ '/calendar' if is_new else '/calendar/' ~ item.id }}">Annuler</a>
+      <button class="btn primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ 'Modifier' if item else 'Nouveau' }} compte{% endblock %}
+{% block content %}
+<div class="top"><h1>{{ 'Modifier ' ~ item.name if item and item.id else 'Nouveau compte' }}</h1></div>
+<div class="card" style="max-width:680px">
+  <form method="post" class="stack">
+    <div class="fields">
+      <label>Nom<input name="name" value="{{ item.name if item else '' }}" required autofocus></label>
+      <label>E-mail <span class="hint">sert d'identifiant</span><input type="email" name="email" value="{{ item.email if item else '' }}" required></label>
+      <label>Rôle<select name="role">{{ m.options(USER_ROLES, item.role if item else 'staff') }}</select></label>
+      <label>Fiche membre liée <span class="hint">obligatoire pour un joueur</span><select name="member_id"><option value="">Aucune</option>
+        {% for mem in members %}<option value="{{ mem.id }}" {{ 'selected' if item and item.member_id == mem.id }}>{{ mem.nickname }}</option>{% endfor %}</select></label>
+      <label class="full">{{ 'Nouveau mot de passe' if item and item.id else 'Mot de passe' }}
+        <span class="hint">{{ 'laisser vide pour ne pas changer' if item and item.id else 'laisser vide pour en générer un automatiquement' }}</span>
+        <input type="text" name="password" autocomplete="new-password"></label>
+      {% if item and item.id %}<label class="check full"><input type="checkbox" name="active" {{ 'checked' if item.active }}> Compte actif</label>{% endif %}
+    </div>
+    <div class="form-actions">
+      <a class="btn" href="/users">Annuler</a>
+      <button class="btn primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

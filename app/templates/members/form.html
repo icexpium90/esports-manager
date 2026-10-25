@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ 'Nouveau membre' if is_new else 'Modifier ' ~ item.nickname }}{% endblock %}
+{% block content %}
+<div class="top"><h1>{{ 'Nouveau membre' if is_new else 'Modifier ' ~ item.nickname }}</h1></div>
+<div class="card" style="max-width:820px">
+  <form method="post" class="stack">
+    <div class="fields">
+      <label>Pseudo<input name="nickname" value="{{ item.nickname or '' }}" required autofocus></label>
+      <label>Équipe<select name="team_id"><option value="">Aucune</option>
+        {% for t in teams %}<option value="{{ t.id }}" {{ 'selected' if item.team_id == t.id }}>{{ t.name }} ({{ GAMES[t.game] }})</option>{% endfor %}</select></label>
+      <label>Prénom<input name="first_name" value="{{ item.first_name or '' }}"></label>
+      <label>Nom<input name="last_name" value="{{ item.last_name or '' }}"></label>
+      <label>Rôle dans la structure<select name="kind">{{ m.options(MEMBER_KINDS, item.kind) }}</select></label>
+      <label>Poste en jeu <span class="hint">ex. Duelist, AWPer, IGL…</span>
+        <input name="game_role" value="{{ item.game_role or '' }}" list="roles"></label>
+      <datalist id="roles">{% for g, roles in GAME_ROLES.items() %}{% for r in roles %}<option value="{{ r }}">{% endfor %}{% endfor %}</datalist>
+      <label>Statut<select name="status">{{ m.options(MEMBER_STATUS, item.status) }}</select></label>
+      <label>Arrivé(e) le<input type="date" name="joined_on" value="{{ item.joined_on or '' }}"></label>
+      <label>E-mail<input type="email" name="email" value="{{ item.email or '' }}"></label>
+      <label>Téléphone<input name="phone" value="{{ item.phone or '' }}"></label>
+      <label>Discord<input name="discord" value="{{ item.discord or '' }}"></label>
+      <label>Nationalité<input name="nationality" value="{{ item.nationality or '' }}"></label>
+      <label>Date de naissance<input type="date" name="birth_date" value="{{ item.birth_date or '' }}"></label>
+      <label class="full">Notes<textarea name="notes">{{ item.notes or '' }}</textarea></label>
+    </div>
+    <div class="form-actions">
+      <a class="btn" href="{{ '/members' if is_new else '/members/' ~ item.id }}">Annuler</a>
+      <button class="btn primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

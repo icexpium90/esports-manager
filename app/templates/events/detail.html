@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ m.event_title(event) }}{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <div>{{ m.kind_badge(event.kind) }}{% if team %} <span class="small">· {{ m.game(team.game) }} · <a href="/teams/{{ team.id }}">{{ team.name }}</a></span>{% endif %}</div>
+    <h1 style="margin-top:6px">{{ m.event_title(event) }} {{ m.result(event) }}</h1>
+    <div class="sub">{{ event.starts_at|dt }}{% if event.ends_at %} → {{ event.ends_at.strftime('%H:%M') }}{% endif %}</div>
+  </div>
+  {% if user.role != 'joueur' %}
+  <div class="actions">
+    <a class="btn" href="/calendar/{{ event.id }}/edit">Modifier</a>
+    {% if event.kind in ('officiel', 'scrim') %}<a class="btn primary" href="/calendar/{{ event.id }}/result">{{ 'Modifier le résultat' if event.score_us is not none else 'Saisir le résultat' }}</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+<div class="grid g2" style="margin-bottom:16px">
+  <div class="card">
+    <div class="head"><h2>Détails</h2></div>
+    <dl class="props">
+      <dt>Compétition</dt><dd>{{ event.competition or '—' }}</dd>
+      <dt>Lieu / lien</dt><dd>{% if event.location and event.location.startswith('http') %}<a href="{{ event.location }}" target="_blank" rel="noopener">{{ event.location }}</a>{% else %}{{ event.location or '—' }}{% endif %}</dd>
+      {% if event.maps %}<dt>Maps</dt><dd style="white-space:pre-line">{{ event.maps }}</dd>{% endif %}
+    </dl>
+    {% if event.notes %}<p style="white-space:pre-line;margin-bottom:0">{{ event.notes }}</p>{% endif %}
+  </div>
+  {% if event.score_us is not none %}
+  <div class="card kpi">
+    <div class="label">Score</div>
+    <div class="value" style="font-size:2.4rem">{{ event.score_us }} – {{ event.score_them }}</div>
+    <div class="muted">{{ ORG_NAME }}{% if event.opponent %} vs {{ event.opponent }}{% endif %}</div>
+  </div>
+  {% endif %}
+</div>
+{% if stats %}
+{% set labels = GAME_STATS[team.game] if team else ('Stat 1', 'Stat 2', 'Stat 3', 'Score') %}
+<div class="card flush">
+  <div class="head"><h2>Stats des joueurs</h2></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Joueur</th><th class="num">{{ labels[0] }}</th><th class="num">{{ labels[1] }}</th><th class="num">{{ labels[2] }}</th><th class="num">{{ labels[3] }}</th><th class="num">Note</th><th>Commentaire</th></tr></thead>
+    <tbody>{% for st, p in stats %}
+      <tr><td><a href="/members/{{ p.id }}"><strong>{{ p.nickname }}</strong></a> {% if st.mvp %}<span class="badge accent">MVP</span>{% endif %}</td>
+        {% for v in [st.stat1, st.stat2, st.stat3, st.score, st.rating] %}<td class="num">{{ ('%g' % v) if v is not none else '—' }}</td>{% endfor %}
+        <td class="small">{{ st.comment or '' }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+</div>
+{% endif %}
+{% if user.role != 'joueur' %}
+<form method="post" action="/calendar/{{ event.id }}/delete" onsubmit="return confirm('Supprimer cet événement et ses stats ?')" style="margin-top:20px">
+  <button class="btn sm danger">Supprimer l'événement</button>
+</form>
+{% endif %}
+{% endblock %}

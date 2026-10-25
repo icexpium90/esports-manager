@@ -1,0 +1,40 @@
+{% macro game(code) -%}
+<span class="game game-{{ code }}">{{ GAMES.get(code, code) }}</span>
+{%- endmacro %}
+
+{% macro kind_badge(kind) -%}
+<span class="badge kind-{{ kind }}" style="color: var(--k)"><span class="dot"></span>{{ EVENT_KINDS.get(kind, kind) }}</span>
+{%- endmacro %}
+
+{% macro result(e) -%}
+{% if e.score_us is not none and e.score_them is not none %}
+  {% set cls = 'ok' if e.score_us > e.score_them else ('bad' if e.score_us < e.score_them else '') %}
+  <span class="badge {{ cls }} score">{{ 'V' if cls == 'ok' else ('D' if cls == 'bad' else 'N') }} {{ e.score_us }}–{{ e.score_them }}</span>
+{% endif %}
+{%- endmacro %}
+
+{% macro event_title(e) -%}
+{% if e.opponent %}vs {{ e.opponent }}{% elif e.title %}{{ e.title }}{% else %}{{ EVENT_KINDS.get(e.kind, e.kind) }}{% endif %}
+{%- endmacro %}
+
+{% macro status_badge(status) -%}
+<span class="badge {{ 'ok' if status == 'actif' else ('warn' if status == 'essai' else '') }}">{{ MEMBER_STATUS.get(status, status) }}</span>
+{%- endmacro %}
+
+{% macro options(choices, selected, empty=none) -%}
+{% if empty is not none %}<option value="">{{ empty }}</option>{% endif %}
+{% for k, v in choices.items() %}<option value="{{ k }}" {{ 'selected' if k|string == selected|string }}>{{ v }}</option>{% endfor %}
+{%- endmacro %}
+
+{% macro record(r) -%}
+<span class="score">{{ r[0] }}V – {{ r[1] }}D{% if r[2] %} – {{ r[2] }}N{% endif %}</span>
+{%- endmacro %}
+
+{% macro contract_badge(c) -%}
+{% if c.end_date %}
+  {% set days = (c.end_date - today()).days %}
+  {% if days < 0 %}<span class="badge">Terminé</span>
+  {% elif days <= 60 %}<span class="badge warn">Fin dans {{ days }} j</span>
+  {% else %}<span class="badge ok">En cours</span>{% endif %}
+{% else %}<span class="badge ok">Sans date de fin</span>{% endif %}
+{%- endmacro %}

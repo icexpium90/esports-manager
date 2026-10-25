@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Équipes{% endblock %}
+{% block content %}
+<div class="top">
+  <div><h1>Équipes</h1><div class="sub">Une équipe par jeu ou par line-up (ex. Valorant Main, Valorant Academy).</div></div>
+  {% if user.role != 'joueur' %}<a class="btn primary" href="/teams/new">+ Nouvelle équipe</a>{% endif %}
+</div>
+{% if teams %}
+<div class="grid g3">
+  {% for t in teams %}
+  <a class="card" href="/teams/{{ t.id }}" style="color:inherit;text-decoration:none{{ ';opacity:.6' if not t.active }}">
+    <div class="small">{{ m.game(t.game) }}{% if not t.active %} · <span class="muted">archivée</span>{% endif %}</div>
+    <h2 style="margin:6px 0 10px;font-size:1.2rem">{{ t.name }}</h2>
+    <div class="small muted">{{ counts[t.id] }} membre{{ 's' if counts[t.id] > 1 }} · officiels : {{ m.record(records[t.id]) }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty">Aucune équipe. {% if user.role != 'joueur' %}<a href="/teams/new">Crée ta première équipe</a>.{% endif %}</div>
+{% endif %}
+{% endblock %}

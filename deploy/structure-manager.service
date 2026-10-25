@@ -1,0 +1,15 @@
+# Service systemd : /etc/systemd/system/structure-manager.service
+[Unit]
+Description=Gestion de structure esport (manager.luostatis.fr)
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/opt/structure-manager
+Environment=STRUCTURE_NAME=Luostatis
+ExecStart=/usr/bin/python3 /opt/structure-manager/start.py --host 127.0.0.1 --port 1212 --no-browser
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

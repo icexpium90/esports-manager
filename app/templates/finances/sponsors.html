@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Sponsors{% endblock %}
+{% block content %}
+<div class="top">
+  <div><h1>Sponsors et partenaires</h1><div class="sub">Contrats actifs : <strong>{{ active_total|money }}</strong> par an</div></div>
+  <a class="btn primary" href="/finances/sponsors/new">+ Sponsor</a>
+</div>
+<div class="card flush">
+  {% if items %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Partenaire</th><th>Statut</th><th>Contact</th><th>Période</th><th class="num">Montant / an</th><th class="num">Encaissé</th><th></th></tr></thead>
+    <tbody>{% for sp in items %}
+      <tr>
+        <td><strong>{{ sp.name }}</strong>{% if sp.deliverables %}<div class="small muted" style="max-width:340px">{{ sp.deliverables }}</div>{% endif %}</td>
+        <td><span class="badge {{ {'actif': 'ok', 'negociation': 'warn', 'prospect': 'accent'}.get(sp.status, '') }}">{{ SPONSOR_STATUS[sp.status] }}</span></td>
+        <td>{{ sp.contact_name or '—' }}{% if sp.contact_email %}<div class="small"><a href="mailto:{{ sp.contact_email }}">{{ sp.contact_email }}</a></div>{% endif %}</td>
+        <td class="small nowrap">{{ sp.start_date|d }} → {{ sp.end_date|d }}</td>
+        <td class="num">{{ sp.yearly_amount|money }}</td>
+        <td class="num">{{ received.get(sp.id, 0)|money }}</td>
+        <td class="right"><a class="btn sm" href="/finances/sponsors/{{ sp.id }}/edit">Modifier</a></td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  <p class="small muted" style="padding:0 18px 14px">« Encaissé » = somme des recettes liées à ce sponsor dans les finances.</p>
+  {% else %}<div class="empty">Aucun sponsor pour l'instant.</div>{% endif %}
+</div>
+{% endblock %}

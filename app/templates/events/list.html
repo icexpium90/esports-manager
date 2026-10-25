@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ 'Historique' if past else 'À venir' }}{% endblock %}
+{% block content %}
+<div class="top">
+  <div><h1>{{ 'Historique' if past else 'À venir' }}</h1></div>
+  <div class="actions">
+    <a class="btn {{ 'primary' if not past }}" href="/calendar/list{{ '?team=' ~ team if team }}">À venir</a>
+    <a class="btn {{ 'primary' if past }}" href="/calendar/list?past=1{{ '&team=' ~ team if team }}">Historique</a>
+    <a class="btn" href="/calendar">Vue mois</a>
+  </div>
+</div>
+<form class="filters" method="get" style="margin-bottom:14px" onchange="this.submit()">
+  {% if past %}<input type="hidden" name="past" value="1">{% endif %}
+  <select name="team"><option value="">Toutes les équipes</option>
+    {% for t in teams.values() %}<option value="{{ t.id }}" {{ 'selected' if team == t.id }}>{{ t.name }}</option>{% endfor %}</select>
+</form>
+<div class="card flush">
+  {% if events %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Date</th><th>Type</th><th>Événement</th><th>Équipe</th><th>Compétition</th><th>Résultat</th></tr></thead>
+    <tbody>{% for e in events %}
+      <tr><td class="nowrap">{{ e.starts_at|dt }}</td><td>{{ m.kind_badge(e.kind) }}</td>
+        <td><a href="/calendar/{{ e.id }}"><strong>{{ m.event_title(e) }}</strong></a></td>
+        <td>{{ teams[e.team_id].name if e.team_id and teams.get(e.team_id) else '—' }}</td>
+        <td>{{ e.competition or '—' }}</td><td>{{ m.result(e) }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">Aucun événement.</div>{% endif %}
+</div>
+{% endblock %}

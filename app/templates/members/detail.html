@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ member.nickname }}{% endblock %}
+{% block content %}
+<div class="top">
+  <div class="profile-head">
+    <div class="avatar">{{ member.nickname[:2]|upper }}</div>
+    <div><h1>{{ member.nickname }}</h1>
+      <div class="sub">{{ MEMBER_KINDS[member.kind] }}{% if member.game_role %} · {{ member.game_role }}{% endif %}{% if team %} · <a href="/teams/{{ team.id }}">{{ team.name }}</a>{% endif %} · {{ m.status_badge(member.status) }}</div></div>
+  </div>
+  {% if user.role != 'joueur' %}<div class="actions"><a class="btn" href="/members/{{ member.id }}/edit">Modifier</a></div>{% endif %}
+</div>
+
+<div class="grid g2" style="margin-bottom:16px">
+  <div class="card">
+    <div class="head"><h2>Informations</h2></div>
+    <dl class="props">
+      <dt>Nom</dt><dd>{{ member.first_name or '' }} {{ member.last_name or '' }}{% if not member.first_name and not member.last_name %}—{% endif %}</dd>
+      <dt>Âge</dt><dd>{% if member.birth_date %}{{ member.birth_date|age }} ans ({{ member.birth_date|d }}){% else %}—{% endif %}</dd>
+      <dt>Nationalité</dt><dd>{{ member.nationality or '—' }}</dd>
+      <dt>Arrivée</dt><dd>{{ member.joined_on|d }}</dd>
+      <dt>E-mail</dt><dd>{% if member.email %}<a href="mailto:{{ member.email }}">{{ member.email }}</a>{% else %}—{% endif %}</dd>
+      <dt>Téléphone</dt><dd>{{ member.phone or '—' }}</dd>
+      <dt>Discord</dt><dd>{{ member.discord or '—' }}</dd>
+    </dl>
+    {% if member.notes and user.role != 'joueur' %}<p class="small" style="white-space:pre-line;margin-bottom:0"><strong>Notes :</strong> {{ member.notes }}</p>{% endif %}
+  </div>
+
+  {% if user.role != 'joueur' or user.member_id == member.id %}
+  <div class="card">
+    <div class="head"><h2>Contrats</h2>{% if user.role != 'joueur' %}<a class="btn sm" href="/members/{{ member.id }}/contracts/new">+ Contrat</a>{% endif %}</div>
+    {% if contracts %}
+    <ul class="list">{% for c in contracts %}
+      <li>
+        <div><strong>{{ CONTRACT_TYPES[c.type] }}</strong> · {{ c.monthly_amount|money }}/mois
+          <div class="small muted">du {{ c.start_date|d }} {{ 'au ' ~ (c.end_date|d) if c.end_date else '(sans date de fin)' }}</div>
+          {% if c.notes %}<div class="small muted">{{ c.notes }}</div>{% endif %}</div>
+        <div class="actions">{{ m.contract_badge(c) }}{% if user.role != 'joueur' %}<a class="btn sm" href="/members/{{ member.id }}/contracts/{{ c.id }}/edit">Modifier</a>{% endif %}</div>
+      </li>{% endfor %}
+    </ul>
+    {% else %}<div class="empty">Aucun contrat enregistré.</div>{% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="card flush">
+  <div class="head"><h2>Historique des stats</h2></div>
+  {% if stats %}
+  {% set labels = GAME_STATS[team.game] if team else ('Stat 1', 'Stat 2', 'Stat 3', 'Score') %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Date</th><th>Match</th><th>Résultat</th><th class="num">{{ labels[0] }}</th><th class="num">{{ labels[1] }}</th><th class="num">{{ labels[2] }}</th><th class="num">{{ labels[3] }}</th><th class="num">Note</th><th></th></tr></thead>
+    <tbody>{% for st, e in stats %}
+      <tr><td class="nowrap">{{ e.starts_at|d }}</td><td><a href="/calendar/{{ e.id }}">{{ m.event_title(e) }}</a> <span class="small muted">{{ EVENT_KINDS[e.kind] }}</span></td>
+        <td>{{ m.result(e) }}</td>
+        {% for v in [st.stat1, st.stat2, st.stat3, st.score, st.rating] %}<td class="num">{{ ('%g' % v) if v is not none else '—' }}</td>{% endfor %}
+        <td>{% if st.mvp %}<span class="badge accent">MVP</span>{% endif %}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">Pas encore de stats.</div>{% endif %}
+</div>
+{% endblock %}

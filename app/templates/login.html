@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Connexion{% endblock %}
+{% block auth %}
+<div class="auth">
+  <div class="card">
+    <div class="brand"><span class="brand-mark">{{ ORG_NAME[:1] }}</span>{{ ORG_NAME }}</div>
+    <h1 style="margin-bottom:4px">Connexion</h1>
+    <p class="muted" style="margin-top:0">Espace de gestion de la structure.</p>
+    {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+    <form method="post" class="stack">
+      <label>E-mail<input type="email" name="email" value="{{ email or '' }}" required autofocus autocomplete="username"></label>
+      <label>Mot de passe<input type="password" name="password" required autocomplete="current-password"></label>
+      <button class="btn primary" style="justify-content:center">Se connecter</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

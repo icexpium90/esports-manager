@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Membres{% endblock %}
+{% block content %}
+<div class="top">
+  <div><h1>Membres</h1><div class="sub">{{ members|length }} membre{{ 's' if members|length > 1 }}</div></div>
+  {% if user.role != 'joueur' %}<a class="btn primary" href="/members/new">+ Nouveau membre</a>{% endif %}
+</div>
+<form class="filters" method="get" style="margin-bottom:14px" onchange="this.submit()">
+  <select name="team"><option value="">Toutes les équipes</option>
+    {% for t in teams.values() %}<option value="{{ t.id }}" {{ 'selected' if filters.team == t.id }}>{{ t.name }}</option>{% endfor %}</select>
+  <select name="kind">{{ m.options(MEMBER_KINDS, filters.kind or '', 'Tous les rôles') }}</select>
+  <select name="status">
+    <option value="actifs" {{ 'selected' if filters.status == 'actifs' }}>Actifs et en essai</option>
+    {{ m.options(MEMBER_STATUS, filters.status) }}
+    <option value="tous" {{ 'selected' if filters.status == 'tous' }}>Tous</option>
+  </select>
+  <noscript><button class="btn sm">Filtrer</button></noscript>
+</form>
+<div class="card flush">
+  {% if members %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Pseudo</th><th>Nom</th><th>Équipe</th><th>Rôle</th><th>Poste</th><th>Statut</th>
+      {% if user.role != 'joueur' %}<th>Contrat</th>{% endif %}</tr></thead>
+    <tbody>{% for p in members %}
+      <tr>
+        <td><a href="/members/{{ p.id }}"><strong>{{ p.nickname }}</strong></a></td>
+        <td>{{ p.first_name or '' }} {{ p.last_name or '' }}</td>
+        <td>{% if p.team_id and teams.get(p.team_id) %}<a href="/teams/{{ p.team_id }}">{{ teams[p.team_id].name }}</a>{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td>{{ MEMBER_KINDS[p.kind] }}</td>
+        <td>{{ p.game_role or '—' }}</td>
+        <td>{{ m.status_badge(p.status) }}</td>
+        {% if user.role != 'joueur' %}<td>{% set c = current.get(p.id) %}{% if c %}{{ m.contract_badge(c) }}{% else %}<span class="muted small">Aucun</span>{% endif %}</td>{% endif %}
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">Aucun membre ne correspond.</div>{% endif %}
+</div>
+{% endblock %}

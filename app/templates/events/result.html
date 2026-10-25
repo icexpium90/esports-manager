@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Résultat{% endblock %}
+{% block content %}
+{% set labels = GAME_STATS[team.game] if team else ('Stat 1', 'Stat 2', 'Stat 3', 'Score') %}
+<div class="top"><div><h1>Résultat : {{ m.event_title(event) }}</h1><div class="sub">{{ event.starts_at|dt }}{% if team %} · {{ team.name }}{% endif %}</div></div></div>
+<form method="post" class="stack">
+  <div class="card" style="max-width:640px">
+    <div class="fields">
+      <label>Notre score <span class="hint">maps ou manches gagnées</span><input type="number" min="0" name="score_us" value="{{ event.score_us if event.score_us is not none else '' }}"></label>
+      <label>Score adverse<input type="number" min="0" name="score_them" value="{{ event.score_them if event.score_them is not none else '' }}"></label>
+      <label class="full">Détail des maps <span class="hint">ex. Ascent 13-9, Bind 11-13, Lotus 13-7</span><textarea name="maps" style="min-height:60px">{{ event.maps or '' }}</textarea></label>
+    </div>
+  </div>
+  <div class="card flush">
+    <div class="head"><h2>Stats des joueurs</h2><span class="small muted">Coche les joueurs qui ont joué. Toutes les stats sont facultatives.</span></div>
+    {% if players %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>A joué</th><th>Joueur</th><th class="num">{{ labels[0] }}</th><th class="num">{{ labels[1] }}</th><th class="num">{{ labels[2] }}</th><th class="num">{{ labels[3] }}</th><th class="num">Note /10</th><th>MVP</th><th>Commentaire</th></tr></thead>
+      <tbody>{% for p in players %}{% set st = existing.get(p.id) %}
+        <tr>
+          <td><input type="checkbox" name="played_{{ p.id }}" style="width:auto" {{ 'checked' if st or (not existing and p.kind == 'joueur') }}></td>
+          <td><strong>{{ p.nickname }}</strong>{% if p.kind == 'remplacant' %} <span class="small muted">remp.</span>{% endif %}</td>
+          {% for field in ['stat1', 'stat2', 'stat3', 'score', 'rating'] %}
+          <td class="num"><input class="stat-input" name="{{ field }}_{{ p.id }}" inputmode="decimal" value="{{ ('%g' % st[field]) if st and st[field] is not none else '' }}"></td>
+          {% endfor %}
+          <td><input type="radio" name="mvp" value="{{ p.id }}" style="width:auto" {{ 'checked' if st and st.mvp }}></td>
+          <td><input name="comment_{{ p.id }}" value="{{ st.comment or '' if st else '' }}" style="min-width:160px"></td>
+        </tr>
+      {% endfor %}</tbody>
+    </table></div>
+    {% else %}<div class="empty">{{ 'Aucun joueur actif dans l\'équipe.' if team else 'Associe l\'événement à une équipe pour saisir des stats.' }}</div>{% endif %}
+  </div>
+  <div class="form-actions">
+    <a class="btn" href="/calendar/{{ event.id }}">Annuler</a>
+    <button class="btn primary">Enregistrer le résultat</button>
+  </div>
+</form>
+{% endblock %}

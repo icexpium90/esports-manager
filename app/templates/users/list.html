@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Comptes{% endblock %}
+{% block content %}
+<div class="top">
+  <div><h1>Comptes</h1><div class="sub">Qui peut se connecter à l'outil.</div></div>
+  <a class="btn primary" href="/users/new">+ Nouveau compte</a>
+</div>
+<div class="card flush">
+  <div class="table-wrap"><table>
+    <thead><tr><th>Nom</th><th>E-mail</th><th>Rôle</th><th>Fiche membre</th><th>État</th><th></th></tr></thead>
+    <tbody>{% for u in users %}
+      <tr><td><strong>{{ u.name }}</strong></td><td>{{ u.email }}</td>
+        <td><span class="badge {{ 'accent' if u.role == 'admin' }}">{{ USER_ROLES[u.role] }}</span></td>
+        <td>{% if u.member_id and members.get(u.member_id) %}<a href="/members/{{ u.member_id }}">{{ members[u.member_id].nickname }}</a>{% else %}—{% endif %}</td>
+        <td>{{ '<span class="badge ok">Actif</span>'|safe if u.active else '<span class="badge">Désactivé</span>'|safe }}</td>
+        <td class="right"><a class="btn sm" href="/users/{{ u.id }}/edit">Modifier</a></td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+</div>
+<div class="card small" style="margin-top:16px">
+  <strong>Rôles :</strong> <em>Administrateur</em> : tout, y compris les comptes.
+  <em>Staff</em> : équipes, membres, contrats, calendrier, résultats et finances.
+  <em>Joueur</em> : consulte son équipe, le calendrier, les résultats et son propre contrat (lier le compte à sa fiche membre).
+</div>
+{% endblock %}

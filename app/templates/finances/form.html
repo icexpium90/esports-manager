@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Nouvelle opération' if is_new else 'Modifier l\'opération' }}{% endblock %}
+{% block content %}
+<div class="top"><h1>{{ ('Nouvelle ' ~ ('recette' if item.direction == 'recette' else 'dépense')) if is_new else 'Modifier l\'opération' }}</h1></div>
+<div class="card" style="max-width:720px">
+  <form method="post" class="stack">
+    <div class="fields">
+      <label>Type<select name="direction" id="direction">
+        <option value="recette" {{ 'selected' if item.direction == 'recette' }}>Recette</option>
+        <option value="depense" {{ 'selected' if item.direction == 'depense' }}>Dépense</option></select></label>
+      <label>Catégorie<select name="category" id="category">
+        {% for dir, cats in TRANSACTION_CATEGORIES.items() %}{% for k, v in cats.items() %}
+          <option value="{{ k }}" data-dir="{{ dir }}" {{ 'selected' if item.direction == dir and item.category == k }}>{{ v }}</option>
+        {% endfor %}{% endfor %}</select></label>
+      <label>Libellé<input name="label" value="{{ item.label or '' }}" required placeholder="ex. Inscription VCL, Salaire octobre…"></label>
+      <label>Montant (€)<input name="amount" inputmode="decimal" value="{{ ('%g' % item.amount) if item.amount else '' }}" required></label>
+      <label>Date<input type="date" name="date" value="{{ item.date }}" required></label>
+      <label>Équipe <span class="hint">facultatif</span><select name="team_id"><option value="">Toute la structure</option>
+        {% for t in teams %}<option value="{{ t.id }}" {{ 'selected' if item.team_id == t.id }}>{{ t.name }}</option>{% endfor %}</select></label>
+      <label>Sponsor lié <span class="hint">facultatif</span><select name="sponsor_id"><option value="">Aucun</option>
+        {% for sp in sponsors %}<option value="{{ sp.id }}" {{ 'selected' if item.sponsor_id == sp.id }}>{{ sp.name }}</option>{% endfor %}</select></label>
+      <label class="full">Notes<textarea name="notes" style="min-height:60px">{{ item.notes or '' }}</textarea></label>
+    </div>
+    <div class="form-actions">
+      <a class="btn" href="/finances">Annuler</a>
+      <button class="btn primary">Enregistrer</button>
+    </div>
+  </form>
+  {% if not is_new %}
+  <form method="post" action="/finances/{{ item.id }}/delete" onsubmit="return confirm('Supprimer cette opération ?')" style="margin-top:10px">
+    <button class="btn sm danger">Supprimer</button>
+  </form>
+  {% endif %}
+</div>
+<script>
+  // N'afficher que les catégories du type choisi
+  const dir = document.getElementById('direction'), cat = document.getElementById('category');
+  function sync() {
+    let firstVisible = null;
+    for (const o of cat.options) {
+      const show = o.dataset.dir === dir.value;
+      o.hidden = !show; o.disabled = !show;
+      if (show && !firstVisible) firstVisible = o;
+    }
+    if (cat.selectedOptions[0]?.disabled) firstVisible.selected = true;
+  }
+  dir.addEventListener('change', sync); sync();
+</script>
+{% endblock %}

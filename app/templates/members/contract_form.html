@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Contrat · {{ member.nickname }}{% endblock %}
+{% block content %}
+<div class="top"><div><h1>{{ 'Modifier le contrat' if item and item.id else 'Nouveau contrat' }}</h1><div class="sub">{{ member.nickname }}</div></div></div>
+<div class="card" style="max-width:640px">
+  <form method="post" class="stack">
+    <div class="fields">
+      <label>Type<select name="type">{{ m.options(CONTRACT_TYPES, item.type if item else 'salarie') }}</select></label>
+      <label>Montant mensuel (€) <span class="hint">salaire ou défraiement, 0 si bénévole</span>
+        <input name="monthly_amount" inputmode="decimal" value="{{ ('%g' % item.monthly_amount) if item else '0' }}"></label>
+      <label>Début<input type="date" name="start_date" value="{{ item.start_date if item else today() }}" required></label>
+      <label>Fin <span class="hint">vide = sans date de fin</span><input type="date" name="end_date" value="{{ item.end_date or '' if item else '' }}"></label>
+      <label class="full">Notes <span class="hint">clauses, buy-out, primes…</span><textarea name="notes">{{ item.notes or '' if item else '' }}</textarea></label>
+    </div>
+    <div class="form-actions">
+      <a class="btn" href="/members/{{ member.id }}">Annuler</a>
+      <button class="btn primary">Enregistrer</button>
+    </div>
+  </form>
+  {% if item and item.id %}
+  <form method="post" action="/members/{{ member.id }}/contracts/{{ item.id }}/delete" onsubmit="return confirm('Supprimer ce contrat ?')" style="margin-top:10px">
+    <button class="btn sm danger">Supprimer ce contrat</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

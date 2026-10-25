@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Premier lancement{% endblock %}
+{% block auth %}
+<div class="auth">
+  <div class="card">
+    <div class="brand"><span class="brand-mark">{{ ORG_NAME[:1] }}</span>{{ ORG_NAME }}</div>
+    <h1 style="margin-bottom:4px">Bienvenue</h1>
+    <p class="muted" style="margin-top:0">Crée le compte administrateur. Tu pourras ensuite ajouter ton staff et tes joueurs.</p>
+    {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+    <form method="post" class="stack">
+      <label>Ton nom<input name="name" value="{{ name or '' }}" required autofocus></label>
+      <label>E-mail<input type="email" name="email" value="{{ email or '' }}" required autocomplete="username"></label>
+      <label>Mot de passe <span class="hint">8 caractères minimum</span><input type="password" name="password" minlength="8" required autocomplete="new-password"></label>
+      <button class="btn primary" style="justify-content:center">Créer le compte</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

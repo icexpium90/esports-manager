@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ 'Modifier' if item else 'Nouvelle' }} équipe{% endblock %}
+{% block content %}
+<div class="top"><h1>{{ 'Modifier ' ~ item.name if item else 'Nouvelle équipe' }}</h1></div>
+<div class="card" style="max-width:640px">
+  <form method="post" class="stack">
+    <div class="fields">
+      <label>Nom<input name="name" value="{{ item.name if item else '' }}" placeholder="ex. Valorant Main" required autofocus></label>
+      <label>Jeu<select name="game">{{ m.options(GAMES, item.game if item else 'valorant') }}</select></label>
+      <label class="full">Description<textarea name="description">{{ item.description or '' if item else '' }}</textarea></label>
+      {% if item %}<label class="check full"><input type="checkbox" name="active" {{ 'checked' if item.active }}> Équipe active (décocher pour l'archiver)</label>{% endif %}
+    </div>
+    <div class="form-actions">
+      <a class="btn" href="{{ '/teams/' ~ item.id if item else '/teams' }}">Annuler</a>
+      <button class="btn primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

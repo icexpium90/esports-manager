@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Mon compte{% endblock %}
+{% block content %}
+<div class="top"><div><h1>Mon compte</h1><div class="sub">{{ user.email }} · {{ USER_ROLES[user.role] }}</div></div></div>
+<div class="card" style="max-width:520px">
+  <div class="head"><h2>Changer de mot de passe</h2></div>
+  {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+  <form method="post" class="stack">
+    <label>Mot de passe actuel<input type="password" name="current" required autocomplete="current-password"></label>
+    <label>Nouveau mot de passe <span class="hint">8 caractères minimum</span><input type="password" name="new" minlength="8" required autocomplete="new-password"></label>
+    <div class="form-actions"><button class="btn primary">Enregistrer</button></div>
+  </form>
+</div>
+{% endblock %}

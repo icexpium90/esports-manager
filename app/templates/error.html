@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Erreur {{ code }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px">
+  <h1>Erreur {{ code }}</h1>
+  <p class="muted">{{ message }}</p>
+  <a class="btn" href="/">Retour au tableau de bord</a>
+</div>
+{% endblock %}
+{% block auth %}
+<div class="auth"><div class="card"><h1>Erreur {{ code }}</h1><p class="muted">{{ message }}</p><a class="btn" href="/login">Connexion</a></div></div>
+{% endblock %}
