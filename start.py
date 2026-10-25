@@ -97,7 +97,9 @@ def main():
     # 1. Base de données (seulement au premier lancement)
     if not DB_FILE.exists():
         print("Initialisation de la base de données...")
-        run([sys.executable, "scripts/init_db.py"], check=True)
+        if run([sys.executable, "scripts/init_db.py"]).returncode != 0:
+            DB_FILE.unlink(missing_ok=True)  # pas de base à moitié remplie
+            sys.exit("Échec de l'initialisation de la base de données (voir l'erreur ci-dessus).")
 
     # 2. CSS Tailwind (téléchargé au premier lancement ; on continue même en cas d'échec)
     try:

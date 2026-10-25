@@ -26,7 +26,7 @@ def create_frontend(app: FastAPI) -> FastAPI:
 
     @app.get("/")
     async def index(request: Request):
-        return templates.TemplateResponse("index.html", {"request": request})
+        return templates.TemplateResponse(request, "index.html", {"request": request})
 
     @app.get("/home")
     async def home(request: Request):
@@ -35,6 +35,7 @@ def create_frontend(app: FastAPI) -> FastAPI:
         current_page = "home"
         contentview = "pages/home.html"
         return templates.TemplateResponse(
+            request,
             "layout.html",
             {
                 "request": request,
@@ -51,6 +52,7 @@ def create_frontend(app: FastAPI) -> FastAPI:
         current_page = page
         contentview = f"pages/{current_page}.html"
         return templates.TemplateResponse(
+            request,
             "layout.html",
             {
                 "request": request,
