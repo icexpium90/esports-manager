@@ -1,5 +1,6 @@
 """Membres de la structure (joueurs, staff) et leurs contrats."""
 
+import secrets
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -8,9 +9,34 @@ from sqlmodel import Session, select
 from ..db import get_session
 from ..models import (CONTRACT_TYPES, MEMBER_KINDS, MEMBER_STATUS, Contract, Event, Member,
                       PlayerStat, Team, User)
-from ..security import any_user, staff_only
-from ..web import d, f, flash, i, redirect, render, s
+from ..security import any_user, hash_password, staff_only
+from ..web import b, d, f, flash, i, redirect, render, s
 from .dashboard import visible_team_ids
+
+PLAYER_KINDS = ("joueur", "remplacant")
+
+
+def linked_account(session: Session, member: Member):
+    return session.exec(select(User).where(User.member_id == member.id)).first()
+
+
+def create_account(request: Request, session: Session, member: Member) -> bool:
+    """Crée le compte d'accès d'un membre (rôle joueur ou staff) et affiche le mot de passe provisoire."""
+    if not member.email:
+        flash(request, f"Pas de compte créé pour {member.nickname} : ajoute son e-mail sur sa fiche.", "error")
+        return False
+    email = member.email.lower()
+    if session.exec(select(User).where(User.email == email)).first():
+        flash(request, f"Un compte existe déjà avec l'e-mail {email}.", "error")
+        return False
+    password = secrets.token_urlsafe(9)
+    name = " ".join(x for x in (member.first_name, member.last_name) if x) or member.nickname
+    session.add(User(name=name, email=email, password_hash=hash_password(password),
+                     role="joueur" if member.kind in PLAYER_KINDS else "staff", member_id=member.id))
+    session.commit()
+    flash(request, f"Compte créé pour {member.nickname}. Identifiant : {email} · mot de passe provisoire : "
+                   f"{password} (à lui transmettre, il pourra le changer dans « Mon compte »).", "info")
+    return True
 
 router = APIRouter(prefix="/members")
 
@@ -79,10 +105,25 @@ async def save_member(request: Request, member_id: int | None = None, user: User
     item.nationality = s(form, "nationality")
     item.birth_date, item.joined_on = d(form, "birth_date"), d(form, "joined_on")
     item.notes = s(form, "notes")
+    if item.email:
+        item.email = item.email.lower()
     session.add(item)
     session.commit()
     flash(request, "Membre enregistré.")
+    if not member_id and b(form, "create_account") and (item.kind in PLAYER_KINDS or user.role == "admin"):
+        create_account(request, session, item)
     return redirect(f"/members/{item.id}")
+
+
+@router.post("/{member_id}/account")
+def member_account(member_id: int, request: Request, user: User = Depends(staff_only),
+                   session: Session = Depends(get_session)):
+    member = _get(session, member_id)
+    if user.role != "admin" and member.kind not in PLAYER_KINDS:
+        raise HTTPException(403)  # seul un admin donne un accès staff
+    if not linked_account(session, member):
+        create_account(request, session, member)
+    return redirect(f"/members/{member.id}")
 
 
 @router.get("/{member_id}")
@@ -101,8 +142,9 @@ def member_detail(member_id: int, request: Request, user: User = Depends(any_use
         select(PlayerStat, Event).join(Event, Event.id == PlayerStat.event_id)
         .where(PlayerStat.member_id == member.id).order_by(Event.starts_at.desc())
     ).all()
+    account = linked_account(session, member) if user.role != "joueur" else None
     return render(request, "members/detail.html", member=member, team=team, contracts=contracts,
-                  stats=stats, today=date.today())
+                  stats=stats, today=date.today(), account=account)
 
 
 # --- Contrats ---------------------------------------------------------------

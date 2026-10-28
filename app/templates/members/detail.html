@@ -22,6 +22,17 @@
       <dt>E-mail</dt><dd>{% if member.email %}<a href="mailto:{{ member.email }}">{{ member.email }}</a>{% else %}—{% endif %}</dd>
       <dt>Téléphone</dt><dd>{{ member.phone or '—' }}</dd>
       <dt>Discord</dt><dd>{{ member.discord or '—' }}</dd>
+      {% if user.role != 'joueur' %}
+      <dt>Compte</dt><dd>
+        {% if account %}<span class="badge {{ 'ok' if account.active else '' }}">{{ USER_ROLES[account.role] }} · {{ 'actif' if account.active else 'désactivé' }}</span>
+          {% if user.role == 'admin' %} <a class="small" href="/users/{{ account.id }}/edit">gérer</a>{% endif %}
+        {% elif member.kind in ('joueur', 'remplacant') or user.role == 'admin' %}
+          <form method="post" action="/members/{{ member.id }}/account" style="display:inline">
+            <button class="btn sm"{% if not member.email %} disabled title="Ajoute d'abord son e-mail"{% endif %}>Créer son compte</button>
+          </form>{% if not member.email %} <span class="small muted">e-mail requis</span>{% endif %}
+        {% else %}<span class="muted">Aucun</span>{% endif %}
+      </dd>
+      {% endif %}
     </dl>
     {% if member.notes and user.role != 'joueur' %}<p class="small" style="white-space:pre-line;margin-bottom:0"><strong>Notes :</strong> {{ member.notes }}</p>{% endif %}
   </div>

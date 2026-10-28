@@ -29,7 +29,7 @@ Sauvegarder ce dossier suffit : `cp -r data data-sauvegarde-$(date +%F)`.
 | Staff | Équipes, membres, contrats, calendrier, résultats, finances, sponsors |
 | Joueur | Son équipe, le calendrier de son équipe, les résultats et son propre contrat |
 
-Pour un compte joueur, lier le compte à sa fiche membre (page Comptes).
+Quand on ajoute un joueur avec son e-mail, son compte est créé automatiquement (case « Créer son compte d'accès ») et un mot de passe provisoire s'affiche. Pour un membre existant : bouton « Créer son compte » sur sa fiche.
 
 ## Mise en ligne
 

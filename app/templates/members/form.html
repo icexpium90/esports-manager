@@ -23,6 +23,10 @@
       <label>Nationalité<input name="nationality" value="{{ item.nationality or '' }}"></label>
       <label>Date de naissance<input type="date" name="birth_date" value="{{ item.birth_date or '' }}"></label>
       <label class="full">Notes<textarea name="notes">{{ item.notes or '' }}</textarea></label>
+      {% if is_new %}
+      <label class="check full" id="account-box"><input type="checkbox" name="create_account" id="create_account" checked>
+        Créer son compte d'accès <span class="hint">(e-mail obligatoire · un mot de passe provisoire s'affichera)</span></label>
+      {% endif %}
     </div>
     <div class="form-actions">
       <a class="btn" href="{{ '/members' if is_new else '/members/' ~ item.id }}">Annuler</a>
@@ -30,4 +34,17 @@
     </div>
   </form>
 </div>
+{% if is_new %}
+<script>
+  // Compte coché par défaut pour les joueurs ; pour le staff, réservé à l'administrateur
+  const kind = document.querySelector('select[name=kind]'), box = document.getElementById('create_account'),
+        row = document.getElementById('account-box'), isAdmin = {{ 'true' if user.role == 'admin' else 'false' }};
+  function syncAccount() {
+    const player = ['joueur', 'remplacant'].includes(kind.value);
+    row.style.display = (player || isAdmin) ? '' : 'none';
+    box.checked = player;
+  }
+  kind.addEventListener('change', syncAccount); syncAccount();
+</script>
+{% endif %}
 {% endblock %}
