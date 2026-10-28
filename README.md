@@ -31,6 +31,12 @@ Sauvegarder ce dossier suffit : `cp -r data data-sauvegarde-$(date +%F)`.
 
 Quand on ajoute un joueur avec son e-mail, son compte est créé automatiquement (case « Créer son compte d'accès ») et un mot de passe provisoire s'affiche. Pour un membre existant : bouton « Créer son compte » sur sa fiche.
 
+## Inscription des joueurs
+
+Les joueurs s'inscrivent eux-mêmes via le lien « S'inscrire » de la page de connexion (`/register`).
+Leur compte reste bloqué jusqu'à validation par le staff dans **Inscriptions** (équipe, rôle et statut
+choisis à la validation). Pour désactiver les inscriptions : variable `ALLOW_SIGNUP=0`.
+
 ## Mise en ligne
 
 Voir [deploy/README.md](deploy/README.md).

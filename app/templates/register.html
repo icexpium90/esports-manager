@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Inscription{% endblock %}
+{% block auth %}
+<div class="auth">
+  <div class="card" style="max-width:560px">
+    <div class="brand"><span class="brand-mark">{{ ORG_NAME[:1] }}</span>{{ ORG_NAME }}</div>
+    <h1 style="margin-bottom:4px">Inscription joueur</h1>
+    <p class="muted" style="margin-top:0">Ton compte sera actif dès qu'un membre du staff l'aura validé.</p>
+    {% for e in errors or [] %}<div class="flash error">{{ e }}</div>{% endfor %}
+    <form method="post" class="stack">
+      <div class="fields">
+        <label>Pseudo<input name="nickname" value="{{ form.nickname or '' }}" required autofocus></label>
+        <label>Discord <span class="hint">pour te contacter</span><input name="discord" value="{{ form.discord or '' }}" required></label>
+        <label>Prénom<input name="first_name" value="{{ form.first_name or '' }}"></label>
+        <label>Nom<input name="last_name" value="{{ form.last_name or '' }}"></label>
+        <label>Équipe visée<select name="team_id"><option value="">Je ne sais pas encore</option>
+          {% for t in teams %}<option value="{{ t.id }}" {{ 'selected' if form.team_id == t.id|string }}>{{ t.name }} ({{ GAMES[t.game] }})</option>{% endfor %}</select></label>
+        <label>Poste en jeu <span class="hint">ex. Duelist, AWPer, IGL</span><input name="game_role" value="{{ form.game_role or '' }}" list="roles"></label>
+        <datalist id="roles">{% for g, roles in GAME_ROLES.items() %}{% for r in roles %}<option value="{{ r }}">{% endfor %}{% endfor %}</datalist>
+        <label>Date de naissance<input type="date" name="birth_date" value="{{ form.birth_date or '' }}"></label>
+        <label>E-mail <span class="hint">sert d'identifiant</span><input type="email" name="email" value="{{ form.email or '' }}" required autocomplete="username"></label>
+        <label>Mot de passe <span class="hint">8 caractères minimum</span><input type="password" name="password" minlength="8" required autocomplete="new-password"></label>
+        <label>Confirmer le mot de passe<input type="password" name="password2" minlength="8" required autocomplete="new-password"></label>
+        <label style="position:absolute;left:-9999px" aria-hidden="true">Site web<input name="website" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <button class="btn primary" style="justify-content:center">Envoyer mon inscription</button>
+    </form>
+    <p class="small muted" style="margin-bottom:0;text-align:center">Déjà un compte ? <a href="/login">Se connecter</a></p>
+  </div>
+</div>
+{% endblock %}

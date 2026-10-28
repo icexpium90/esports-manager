@@ -45,6 +45,9 @@ MEMBER_KINDS = {
 }
 
 MEMBER_STATUS = {"actif": "Actif", "essai": "En essai", "inactif": "Inactif"}
+# Statut interne d'un membre inscrit en ligne, pas encore validé (hors roster)
+PENDING = "attente"
+HIDDEN_STATUSES = ("inactif", PENDING)
 
 CONTRACT_TYPES = {
     "salarie": "Salarié",
@@ -100,6 +103,7 @@ class User(SQLModel, table=True):
     role: str = "staff"
     member_id: Optional[int] = Field(default=None, foreign_key="member.id")
     active: bool = True
+    pending: bool = False  # inscription en ligne en attente de validation
     created_at: datetime = Field(default_factory=datetime.now)
 
 

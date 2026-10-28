@@ -67,6 +67,14 @@ templates.env.globals.update(
 
 def render(request: Request, name: str, **context):
     context.setdefault("user", getattr(request.state, "user", None))
+    user = context["user"]
+    if user and user.role in ("admin", "staff"):
+        from sqlmodel import Session, func, select
+        from .db import engine
+        with Session(engine) as session:
+            context["pending_count"] = session.exec(
+                select(func.count()).select_from(models.User).where(models.User.pending)).one()
+    context["signup_enabled"] = os.environ.get("ALLOW_SIGNUP", "1") not in ("0", "false", "non")
     context["flashes"] = request.session.pop("flashes", [])
     context["path"] = request.url.path
     return templates.TemplateResponse(request, name, context)

@@ -12,6 +12,12 @@
   {% endif %}
 </div>
 
+{% if pending_count %}
+<div class="flash info" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+  <span>{{ pending_count }} inscription{{ 's' if pending_count > 1 }} en attente de validation.</span>
+  <a class="btn sm" href="/signups">Voir</a>
+</div>
+{% endif %}
 {% if user.role != 'joueur' %}
 <div class="grid g4" style="margin-bottom:16px">
   <div class="card kpi"><div class="label">Équipes actives</div><div class="value">{{ team_count }}</div></div>

@@ -19,7 +19,7 @@ def members_list(session: Session):
 
 @router.get("")
 def list_users(request: Request, user: User = Depends(admin_only), session: Session = Depends(get_session)):
-    users = session.exec(select(User).order_by(User.name)).all()
+    users = session.exec(select(User).where(User.pending == False).order_by(User.name)).all()  # noqa: E712
     members = {m.id: m for m in members_list(session)}
     return render(request, "users/list.html", users=users, members=members)
 

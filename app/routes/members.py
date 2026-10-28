@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session, select
 
 from ..db import get_session
-from ..models import (CONTRACT_TYPES, MEMBER_KINDS, MEMBER_STATUS, Contract, Event, Member,
+from ..models import (HIDDEN_STATUSES, PENDING, CONTRACT_TYPES, MEMBER_KINDS, MEMBER_STATUS, Contract, Event, Member,
                       PlayerStat, Team, User)
 from ..security import any_user, hash_password, staff_only
 from ..web import b, d, f, flash, i, redirect, render, s
@@ -58,9 +58,11 @@ def list_members(request: Request, team: int | None = None, kind: str | None = N
         q = q.where(Member.kind == kind)
     status = status if status is not None else "actifs"
     if status == "actifs":
-        q = q.where(Member.status != "inactif")
+        q = q.where(Member.status.not_in(HIDDEN_STATUSES))
     elif status in MEMBER_STATUS:
         q = q.where(Member.status == status)
+    else:
+        q = q.where(Member.status != PENDING)
     members = session.exec(q).all()
     teams = {t.id: t for t in teams_list(session)}
 

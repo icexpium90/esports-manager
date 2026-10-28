@@ -12,6 +12,7 @@
       <label>Mot de passe<input type="password" name="password" required autocomplete="current-password"></label>
       <button class="btn primary" style="justify-content:center">Se connecter</button>
     </form>
+    {% if signup_enabled %}<p class="small muted" style="margin-bottom:0;text-align:center">Joueur et pas encore de compte ? <a href="/register">S'inscrire</a></p>{% endif %}
   </div>
 </div>
 {% endblock %}

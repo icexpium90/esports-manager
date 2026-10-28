@@ -17,6 +17,18 @@ def init_db() -> None:
     from . import models  # noqa: F401  (enregistre les tables)
 
     SQLModel.metadata.create_all(engine)
+    _migrate()
+
+
+def _migrate() -> None:
+    """Ajoute les colonnes apparues après la création de la base (SQLite)."""
+    added = {"user": {"pending": "BOOLEAN NOT NULL DEFAULT 0"}}
+    with engine.begin() as conn:
+        for table, columns in added.items():
+            existing = {row[1] for row in conn.exec_driver_sql(f'PRAGMA table_info("{table}")')}
+            for name, ddl in columns.items():
+                if name not in existing:
+                    conn.exec_driver_sql(f'ALTER TABLE "{table}" ADD COLUMN {name} {ddl}')
 
 
 def get_session():

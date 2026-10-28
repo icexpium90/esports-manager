@@ -19,6 +19,10 @@ def has_users(session: Session) -> bool:
 def login_page(request: Request, session: Session = Depends(get_session)):
     if not has_users(session):
         return redirect("/setup")
+    if getattr(request.state, "user", None) or request.session.get("user_id"):
+        user = session.get(User, request.session.get("user_id"))
+        if user and user.active:
+            return redirect("/")
     return render(request, "login.html")
 
 
@@ -27,8 +31,13 @@ async def login(request: Request, session: Session = Depends(get_session)):
     form = await request.form()
     email = (s(form, "email") or "").lower()
     user = session.exec(select(User).where(User.email == email)).first()
-    if not user or not user.active or not verify_password(form.get("password") or "", user.password_hash):
+    if not user or not verify_password(form.get("password") or "", user.password_hash):
         return render(request, "login.html", error="E-mail ou mot de passe incorrect.", email=email)
+    if user.pending:
+        return render(request, "login.html", email=email,
+                      error="Ton inscription est en attente de validation par le staff. Réessaie plus tard.")
+    if not user.active:
+        return render(request, "login.html", error="Ce compte est désactivé.", email=email)
     request.session.clear()
     request.session["user_id"] = user.id
     return redirect("/")

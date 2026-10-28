@@ -16,6 +16,7 @@
       ("/", "◧", "Tableau de bord", none),
       ("/teams", "◆", "Équipes", none),
       ("/members", "☺", "Membres", none),
+      ("/signups", "✚", "Inscriptions", "staff"),
       ("/calendar", "▦", "Calendrier", none),
       ("/finances", "€", "Finances", "staff"),
       ("/finances/sponsors", "★", "Sponsors", "staff"),
@@ -24,7 +25,7 @@
     {% for href, ico, label, need in nav %}
       {% if not need or (need == "staff" and user.role in ("admin", "staff")) or (need == "admin" and user.role == "admin") %}
         {% set on = (href == "/" and path == "/") or (href != "/" and path.startswith(href) and not (href == "/finances" and path.startswith("/finances/sponsors"))) %}
-        <a href="{{ href }}" class="{{ 'on' if on }}"><span class="ico">{{ ico }}</span>{{ label }}</a>
+        <a href="{{ href }}" class="{{ 'on' if on }}"><span class="ico">{{ ico }}</span>{{ label }}{% if href == '/signups' and pending_count %} <span class="badge warn" style="margin-left:auto">{{ pending_count }}</span>{% endif %}</a>
       {% endif %}
     {% endfor %}
     <div class="spacer"></div>

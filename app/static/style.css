@@ -158,7 +158,7 @@ td.num, th.num { text-align: right; }
 .btn.sm { padding: 5px 10px; font-size: .85rem; }
 
 form.stack { display: grid; gap: 14px; }
-.fields { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fields { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
 .fields .full { grid-column: 1 / -1; }
 label { display: grid; gap: 6px; font-weight: 600; font-size: .88rem; }
 label .hint { font-weight: 400; color: var(--muted); font-size: .8rem; }

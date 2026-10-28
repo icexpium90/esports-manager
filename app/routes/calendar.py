@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session, select
 
 from ..db import get_session
-from ..models import EVENT_KINDS, Event, Member, PlayerStat, Team, User
+from ..models import EVENT_KINDS, HIDDEN_STATUSES, Event, Member, PlayerStat, Team, User
 from ..security import any_user, staff_only
 from ..web import b, dt, f, flash, i, redirect, render, s
 from .dashboard import visible_team_ids
@@ -138,7 +138,7 @@ def result_form(event_id: int, request: Request, user: User = Depends(staff_only
     team = session.get(Team, event.team_id) if event.team_id else None
     players = []
     if team:
-        players = session.exec(select(Member).where(Member.team_id == team.id, Member.status != "inactif",
+        players = session.exec(select(Member).where(Member.team_id == team.id, Member.status.not_in(HIDDEN_STATUSES),
                                                     Member.kind.in_(["joueur", "remplacant"]))
                                .order_by(Member.kind, Member.nickname)).all()
     existing = {st.member_id: st for st in

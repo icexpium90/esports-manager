@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session, select
 
 from ..db import get_session
-from ..models import GAMES, Event, Member, PlayerStat, Team, User
+from ..models import GAMES, HIDDEN_STATUSES, PENDING, Event, Member, PlayerStat, Team, User
 from ..security import any_user, staff_only
 from ..web import b, flash, redirect, render, s
 from .dashboard import visible_team_ids
@@ -36,7 +36,7 @@ def list_teams(request: Request, user: User = Depends(any_user), session: Sessio
     if ids is not None:
         q = q.where(Team.id.in_(ids))
     teams = session.exec(q).all()
-    members = session.exec(select(Member).where(Member.status != "inactif")).all()
+    members = session.exec(select(Member).where(Member.status.not_in(HIDDEN_STATUSES))).all()
     counts = defaultdict(int)
     for m in members:
         if m.team_id:
@@ -82,7 +82,7 @@ def team_detail(team_id: int, request: Request, user: User = Depends(any_user),
     ids = visible_team_ids(user, session)
     if ids is not None and team.id not in ids:
         raise HTTPException(404)
-    members = session.exec(select(Member).where(Member.team_id == team.id)
+    members = session.exec(select(Member).where(Member.team_id == team.id, Member.status != PENDING)
                            .order_by(Member.status, Member.kind, Member.nickname)).all()
     events = session.exec(select(Event).where(Event.team_id == team.id).order_by(Event.starts_at.desc())).all()
     now = datetime.now()

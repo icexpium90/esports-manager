@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlmodel import Session, select
 
 from ..db import get_session
-from ..models import Contract, Event, Member, Team, Transaction, User
+from ..models import HIDDEN_STATUSES, Contract, Event, Member, Team, Transaction, User
 from ..security import any_user
 from ..web import render
 
@@ -51,7 +51,7 @@ def dashboard(request: Request, user: User = Depends(any_user), session: Session
         expense = sum(t.amount for t in txs if t.direction == "depense")
         all_txs = session.exec(select(Transaction)).all()
         balance = sum(t.amount if t.direction == "recette" else -t.amount for t in all_txs)
-        members = session.exec(select(Member).where(Member.status != "inactif")).all()
+        members = session.exec(select(Member).where(Member.status.not_in(HIDDEN_STATUSES))).all()
         ctx.update(
             ending=ending, income=income, expense=expense, balance=balance,
             player_count=sum(1 for m in members if m.kind in ("joueur", "remplacant")),

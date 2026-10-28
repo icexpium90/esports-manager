@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Inscriptions{% endblock %}
+{% block content %}
+<div class="top">
+  <div><h1>Inscriptions en attente</h1><div class="sub">Les joueurs s'inscrivent sur <strong>/register</strong> (lien sur la page de connexion). Valide ou refuse chaque demande.</div></div>
+</div>
+{% if requests %}
+<div class="grid" style="gap:12px">
+  {% for acc, mem in requests %}
+  <div class="card">
+    <div class="head">
+      <div>
+        <h2>{{ mem.nickname if mem else acc.name }}{% if mem and (mem.first_name or mem.last_name) %} <span class="muted" style="font-weight:400">· {{ mem.first_name or '' }} {{ mem.last_name or '' }}</span>{% endif %}</h2>
+        <div class="small muted">Inscrit le {{ acc.created_at|dt }}</div>
+      </div>
+      <form method="post" action="/signups/{{ acc.id }}/reject" onsubmit="return confirm('Refuser et supprimer cette inscription ?')">
+        <button class="btn sm danger">Refuser</button>
+      </form>
+    </div>
+    <dl class="props small" style="margin-bottom:14px">
+      <dt>E-mail</dt><dd>{{ acc.email }}</dd>
+      <dt>Discord</dt><dd>{{ mem.discord or '—' if mem else '—' }}</dd>
+      <dt>Poste</dt><dd>{{ mem.game_role or '—' if mem else '—' }}</dd>
+      <dt>Âge</dt><dd>{% if mem and mem.birth_date %}{{ mem.birth_date|age }} ans{% else %}—{% endif %}</dd>
+    </dl>
+    <form method="post" action="/signups/{{ acc.id }}/approve" class="filters">
+      <select name="team_id"><option value="">Sans équipe</option>
+        {% for t in teams %}<option value="{{ t.id }}" {{ 'selected' if mem and mem.team_id == t.id }}>{{ t.name }}</option>{% endfor %}</select>
+      <select name="kind"><option value="joueur">Joueur</option><option value="remplacant">Remplaçant</option></select>
+      <select name="status"><option value="essai">En essai</option><option value="actif">Actif</option></select>
+      <button class="btn primary sm">Valider</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty">Aucune inscription en attente.</div>
+{% endif %}
+{% endblock %}
