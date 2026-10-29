@@ -3,7 +3,7 @@
 {% block auth %}
 <div class="auth">
   <div class="card">
-    <div class="brand"><span class="brand-mark">{{ ORG_NAME[:1] }}</span>{{ ORG_NAME }}</div>
+    <div class="brand">{% if has_logo %}<img src="/logo.png" alt="" style="height:44px;max-width:90px;object-fit:contain">{% else %}<span class="brand-mark">{{ ORG_NAME[:1] }}</span>{% endif %}{{ ORG_NAME }}</div>
     <h1 style="margin-bottom:6px">Inscription envoyée{% if nickname %}, {{ nickname }}{% endif %} !</h1>
     <p class="muted">Le staff va vérifier ta demande. Une fois validée, tu pourras te connecter avec ton e-mail et ton mot de passe.</p>
     <a class="btn" href="/login">Retour à la connexion</a>

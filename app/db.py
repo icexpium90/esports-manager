@@ -22,7 +22,20 @@ def init_db() -> None:
 
 def _migrate() -> None:
     """Ajoute les colonnes apparues après la création de la base (SQLite)."""
-    added = {"user": {"pending": "BOOLEAN NOT NULL DEFAULT 0"}}
+    added = {
+        "user": {"pending": "BOOLEAN NOT NULL DEFAULT 0"},
+        "member": {"birth_place": "VARCHAR", "address": "VARCHAR", "postal_city": "VARCHAR", "platform": "VARCHAR",
+                   "rank": "VARCHAR", "guardian_name": "VARCHAR", "guardian_relation": "VARCHAR"},
+        "contract": {
+            "status": "VARCHAR NOT NULL DEFAULT 'brouillon'",
+            "clauses": "VARCHAR",
+            "signed_name": "VARCHAR",
+            "signed_at": "DATETIME",
+            "signed_ip": "VARCHAR",
+            "attachment": "VARCHAR",
+            "attachment_name": "VARCHAR",
+        },
+    }
     with engine.begin() as conn:
         for table, columns in added.items():
             existing = {row[1] for row in conn.exec_driver_sql(f'PRAGMA table_info("{table}")')}

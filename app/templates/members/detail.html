@@ -22,6 +22,11 @@
       <dt>E-mail</dt><dd>{% if member.email %}<a href="mailto:{{ member.email }}">{{ member.email }}</a>{% else %}—{% endif %}</dd>
       <dt>Téléphone</dt><dd>{{ member.phone or '—' }}</dd>
       <dt>Discord</dt><dd>{{ member.discord or '—' }}</dd>
+      {% if user.role != 'joueur' or user.member_id == member.id %}
+      <dt>Adresse</dt><dd>{% if member.address or member.postal_city %}{{ member.address or '' }}{% if member.postal_city %}<br>{{ member.postal_city }}{% endif %}{% else %}—{% endif %}</dd>
+      <dt>Rang</dt><dd>{{ member.rank or '—' }}</dd>
+      {% if member.guardian_name %}<dt>Représentant légal</dt><dd>{{ member.guardian_name }}{% if member.guardian_relation %} ({{ member.guardian_relation }}){% endif %}</dd>{% endif %}
+      {% endif %}
       {% if user.role != 'joueur' %}
       <dt>Compte</dt><dd>
         {% if account %}<span class="badge {{ 'ok' if account.active else '' }}">{{ USER_ROLES[account.role] }} · {{ 'actif' if account.active else 'désactivé' }}</span>
@@ -42,12 +47,14 @@
     <div class="head"><h2>Contrats</h2>{% if user.role != 'joueur' %}<a class="btn sm" href="/members/{{ member.id }}/contracts/new">+ Contrat</a>{% endif %}</div>
     {% if contracts %}
     <ul class="list">{% for c in contracts %}
+      {% if user.role != 'joueur' or c.status != 'brouillon' %}
       <li>
-        <div><strong>{{ CONTRACT_TYPES[c.type] }}</strong> · {{ c.monthly_amount|money }}/mois
+        <div><a href="/contracts/{{ c.id }}"><strong>{{ CONTRACT_TYPES[c.type] }}</strong></a>{% if c.monthly_amount %} · {{ c.monthly_amount|money }}/mois{% endif %}
+          <span class="badge {{ {'signe': 'ok', 'envoye': 'warn'}.get(c.status, '') }}">{{ CONTRACT_STATUS[c.status] }}</span>
           <div class="small muted">du {{ c.start_date|d }} {{ 'au ' ~ (c.end_date|d) if c.end_date else '(sans date de fin)' }}</div>
           {% if c.notes %}<div class="small muted">{{ c.notes }}</div>{% endif %}</div>
-        <div class="actions">{{ m.contract_badge(c) }}{% if user.role != 'joueur' %}<a class="btn sm" href="/members/{{ member.id }}/contracts/{{ c.id }}/edit">Modifier</a>{% endif %}</div>
-      </li>{% endfor %}
+        <div class="actions">{{ m.contract_badge(c) }}<a class="btn sm {{ 'primary' if c.status == 'envoye' and user.member_id == member.id }}" href="/contracts/{{ c.id }}">{{ 'Signer' if c.status == 'envoye' and user.member_id == member.id else 'Ouvrir' }}</a><a class="btn sm" href="/contracts/{{ c.id }}/pdf">PDF</a></div>
+      </li>{% endif %}{% endfor %}
     </ul>
     {% else %}<div class="empty">Aucun contrat enregistré.</div>{% endif %}
   </div>

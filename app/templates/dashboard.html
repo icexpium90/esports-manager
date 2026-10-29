@@ -12,6 +12,12 @@
   {% endif %}
 </div>
 
+{% for c in to_sign or [] %}
+<div class="flash info" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+  <span>Ton contrat est prêt : complète tes informations et signe-le en ligne.</span>
+  <a class="btn sm primary" href="/contracts/{{ c.id }}">Voir et signer</a>
+</div>
+{% endfor %}
 {% if pending_count %}
 <div class="flash info" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
   <span>{{ pending_count }} inscription{{ 's' if pending_count > 1 }} en attente de validation.</span>

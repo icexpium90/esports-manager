@@ -84,6 +84,12 @@ TRANSACTION_CATEGORIES = {
     },
 }
 
+CONTRACT_STATUS = {
+    "brouillon": "Brouillon",
+    "envoye": "À signer par le joueur",
+    "signe": "Signé",
+}
+
 SPONSOR_STATUS = {
     "prospect": "Prospect",
     "negociation": "En négociation",
@@ -129,6 +135,13 @@ class Member(SQLModel, table=True):
     discord: Optional[str] = None
     nationality: Optional[str] = None
     birth_date: Optional[date] = None
+    birth_place: Optional[str] = None
+    address: Optional[str] = None
+    postal_city: Optional[str] = None
+    platform: Optional[str] = None
+    rank: Optional[str] = None
+    guardian_name: Optional[str] = None
+    guardian_relation: Optional[str] = None
     joined_on: Optional[date] = None
     notes: Optional[str] = None
 
@@ -141,6 +154,19 @@ class Contract(SQLModel, table=True):
     end_date: Optional[date] = None
     monthly_amount: float = 0
     notes: Optional[str] = None
+    status: str = "brouillon"  # brouillon | envoye | signe
+    clauses: Optional[str] = None
+    signed_name: Optional[str] = None
+    signed_at: Optional[datetime] = None
+    signed_ip: Optional[str] = None
+    attachment: Optional[str] = None  # nom du fichier joint (copie signée) dans data/contracts
+    attachment_name: Optional[str] = None
+
+
+class Setting(SQLModel, table=True):
+    """Réglages de la structure (clé / valeur)."""
+    key: str = Field(primary_key=True)
+    value: Optional[str] = None
 
 
 class Event(SQLModel, table=True):

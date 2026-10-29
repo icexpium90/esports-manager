@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Contrat · {{ member.nickname }}{% endblock %}
+{% block content %}
+{% set staff = user.role != 'joueur' %}
+<div class="top">
+  <div>
+    <div class="small muted">{{ ref }}</div>
+    <h1>Contrat de {{ member.nickname }}
+      <span class="badge {{ {'signe': 'ok', 'envoye': 'warn'}.get(contract.status, '') }}" style="vertical-align:middle">{{ CONTRACT_STATUS[contract.status] }}</span></h1>
+    <div class="sub">{{ CONTRACT_TYPES[contract.type] }}{% if team %} · {{ m.game(team.game) }} · {{ team.name }}{% endif %} · du {{ contract.start_date|d }} {{ 'au ' ~ (contract.end_date|d) if contract.end_date else '(durée indéterminée)' }}</div>
+  </div>
+  <div class="actions">
+    <a class="btn" href="/contracts/{{ contract.id }}/pdf?view=1" target="_blank" rel="noopener">Aperçu PDF</a>
+    <a class="btn primary" href="/contracts/{{ contract.id }}/pdf">Télécharger le PDF</a>
+  </div>
+</div>
+
+{% if staff and missing_org %}
+<div class="flash info">À compléter dans <a href="/settings">Infos structure</a> pour un PDF complet : {{ missing_org|join(', ') }}.</div>
+{% endif %}
+
+{% if staff %}
+<div class="card" style="margin-bottom:16px">
+  <div class="head"><h2>Étapes</h2></div>
+  <ol class="small" style="margin:0;padding-left:18px;line-height:1.9">
+    <li>{{ '✓' if contract.status != 'brouillon' }} Préparer le contrat (conditions et articles) — <a href="/members/{{ member.id }}/contracts/{{ contract.id }}/edit">modifier</a></li>
+    <li>{{ '✓' if contract.status != 'brouillon' }} L'envoyer au joueur : il le voit dans son espace, complète ses informations et le signe en ligne</li>
+    <li>{{ '✓' if contract.status == 'signe' }} Télécharger le PDF signé et, si tu veux, y joindre une copie signée à la main</li>
+  </ol>
+  <div class="actions" style="margin-top:12px">
+    {% if contract.status == 'brouillon' %}
+      <form method="post" action="/contracts/{{ contract.id }}/send"><button class="btn primary">Envoyer au joueur</button></form>
+    {% else %}
+      <form method="post" action="/contracts/{{ contract.id }}/draft" onsubmit="return confirm('Repasser en brouillon ? {{ 'La signature du joueur sera annulée.' if contract.status == 'signe' else '' }}')"><button class="btn sm">Repasser en brouillon</button></form>
+    {% endif %}
+    <a class="btn sm" href="/members/{{ member.id }}">Fiche de {{ member.nickname }}</a>
+  </div>
+</div>
+{% endif %}
+
+<div class="grid g2" style="margin-bottom:16px">
+  <div class="card">
+    <div class="head"><h2>Conditions</h2></div>
+    <dl class="props">
+      <dt>Type</dt><dd>{{ CONTRACT_TYPES[contract.type] }}</dd>
+      <dt>Début</dt><dd>{{ contract.start_date|d }}</dd>
+      <dt>Fin</dt><dd>{{ contract.end_date|d if contract.end_date else 'Durée indéterminée' }}</dd>
+      <dt>Montant mensuel</dt><dd>{{ contract.monthly_amount|money if contract.monthly_amount else 'Aucun' }}</dd>
+      <dt>Articles</dt><dd>{{ 'Personnalisés pour ce contrat' if custom_clauses else 'Modèle de la structure' }}</dd>
+    </dl>
+    {% if contract.notes %}<p class="small" style="white-space:pre-line;margin-bottom:0"><strong>Conditions particulières :</strong> {{ contract.notes }}</p>{% endif %}
+  </div>
+  <div class="card">
+    <div class="head"><h2>Signature</h2></div>
+    {% if contract.status == 'signe' %}
+      <p style="margin-top:0"><span class="badge ok">Signé</span> par <strong>{{ contract.signed_name }}</strong> le {{ contract.signed_at|dt }}</p>
+      {% if staff and contract.signed_ip %}<p class="small muted">Adresse IP : {{ contract.signed_ip }}</p>{% endif %}
+      <p class="small muted" style="margin-bottom:0">Signature électronique simple (validation en ligne depuis l'espace du joueur). Pour une copie signée à la main, imprime le PDF et joins le scan ci-dessous.</p>
+    {% elif contract.status == 'envoye' %}
+      <p style="margin-top:0">{{ 'En attente de la signature de ' ~ member.nickname ~ '.' if staff else 'Lis le contrat (Aperçu PDF), complète tes informations puis signe en bas de page.' }}</p>
+      {% if missing %}<p class="small"><strong>Informations manquantes :</strong> {{ missing|join(', ') }}</p>{% endif %}
+    {% else %}
+      <p style="margin-top:0" class="muted">Brouillon : le joueur ne le voit pas encore.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if contract.status == 'envoye' and is_owner %}
+<div class="card" id="signer" style="margin-bottom:16px;max-width:900px">
+  <div class="head"><h2>Mes informations et signature</h2></div>
+  <p class="small muted" style="margin-top:0">Ces informations apparaissent dans la partie « Le Joueur / La Joueuse » du contrat. Les champs marqués * sont obligatoires pour signer.</p>
+  <form method="post" action="/contracts/{{ contract.id }}/sign" class="stack">
+    <div class="fields">
+      <label>Nom *<input name="last_name" value="{{ member.last_name or '' }}"></label>
+      <label>Prénom *<input name="first_name" value="{{ member.first_name or '' }}"></label>
+      <label>Date de naissance *<input type="date" name="birth_date" value="{{ member.birth_date or '' }}"></label>
+      <label>Nationalité *<input name="nationality" value="{{ member.nationality or '' }}"></label>
+      <label class="full">Adresse *<input name="address" value="{{ member.address or '' }}" placeholder="N° et rue"></label>
+      <label>Code postal / Ville *<input name="postal_city" value="{{ member.postal_city or '' }}"></label>
+      <label>Téléphone *<input name="phone" value="{{ member.phone or '' }}"></label>
+      <label>Plateforme(s)<input name="platform" value="{{ member.platform or default_platform }}"></label>
+      <label>Rang actuel<input name="rank" value="{{ member.rank or '' }}" placeholder="ex. Global Elite, FACEIT niveau 8"></label>
+      <label class="full small muted">E-mail du contrat : {{ member.email or '—' }} (le staff peut le modifier)</label>
+    </div>
+    <div class="card" style="background:var(--panel-2);box-shadow:none" id="guardian">
+      <h3 style="margin-bottom:6px">Si tu as moins de 18 ans</h3>
+      <p class="small muted" style="margin-top:0">Ton représentant légal (parent ou tuteur) doit lire le contrat avec toi et t'autoriser à le signer.{% if minor %} <strong>Obligatoire dans ton cas.</strong>{% endif %}</p>
+      <div class="fields">
+        <label>Nom du représentant légal{{ ' *' if minor }}<input name="guardian_name" value="{{ member.guardian_name or '' }}"></label>
+        <label>Lien de parenté{{ ' *' if minor }}<input name="guardian_relation" value="{{ member.guardian_relation or '' }}" placeholder="ex. Mère, Père, Tuteur"></label>
+        <label class="check full"><input type="checkbox" name="guardian_ok"> Mon représentant légal a lu le contrat et m'autorise à le signer</label>
+      </div>
+    </div>
+    <label class="check"><input type="checkbox" name="accept"> J'ai lu et j'accepte le contrat (<a href="/contracts/{{ contract.id }}/pdf?view=1" target="_blank" rel="noopener">le relire</a>)</label>
+    <label>Pour signer, recopie ton prénom et ton nom<input name="signature" autocomplete="off" placeholder="Prénom Nom"></label>
+    <div class="form-actions">
+      <button class="btn" name="save_only" value="1">Enregistrer sans signer</button>
+      <button class="btn primary">Signer le contrat</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<div class="card" style="max-width:900px">
+  <div class="head"><h2>Copie signée jointe</h2></div>
+  {% if contract.attachment %}
+    <div class="actions">
+      <a class="btn" href="/contracts/{{ contract.id }}/attachment">Télécharger « {{ contract.attachment_name }} »</a>
+      {% if staff %}<form method="post" action="/contracts/{{ contract.id }}/attachment/delete" onsubmit="return confirm('Retirer ce document ?')"><button class="btn sm danger">Retirer</button></form>{% endif %}
+    </div>
+  {% else %}<p class="muted small" style="margin-top:0">Aucun document joint.</p>{% endif %}
+  {% if staff %}
+  <form method="post" action="/contracts/{{ contract.id }}/attachment" enctype="multipart/form-data" class="filters" style="margin-top:12px">
+    <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg" style="width:auto">
+    <button class="btn sm">{{ 'Remplacer' if contract.attachment else 'Joindre' }}</button>
+    <span class="small muted">PDF, PNG ou JPG · 15 Mo max</span>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

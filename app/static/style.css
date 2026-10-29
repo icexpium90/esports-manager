@@ -244,3 +244,8 @@ dl.props dd { margin: 0; }
   .span2 { grid-column: auto; }
   .cal .ev span.t { display: none; }
 }
+
+/* Le fond du menu descend jusqu'en bas des pages longues */
+@media (min-width: 901px) {
+  .shell { background: linear-gradient(to right, var(--side) 232px, transparent 232px); }
+}

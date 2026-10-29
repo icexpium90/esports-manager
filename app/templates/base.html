@@ -11,7 +11,7 @@
 {% if user %}
 <div class="shell">
   <nav class="side">
-    <div class="brand"><span class="brand-mark">{{ ORG_NAME[:1] }}</span>{{ ORG_NAME }}</div>
+    <div class="brand">{% if has_logo %}<img src="/logo.png" alt="" style="height:34px;max-width:64px;object-fit:contain">{% else %}<span class="brand-mark">{{ ORG_NAME[:1] }}</span>{% endif %}{{ ORG_NAME }}</div>
     {% set nav = [
       ("/", "◧", "Tableau de bord", none),
       ("/teams", "◆", "Équipes", none),
@@ -21,6 +21,7 @@
       ("/finances", "€", "Finances", "staff"),
       ("/finances/sponsors", "★", "Sponsors", "staff"),
       ("/users", "⚙", "Comptes", "admin"),
+      ("/settings", "⌂", "Infos structure", "admin"),
     ] %}
     {% for href, ico, label, need in nav %}
       {% if not need or (need == "staff" and user.role in ("admin", "staff")) or (need == "admin" and user.role == "admin") %}

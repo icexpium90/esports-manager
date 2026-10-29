@@ -6,7 +6,8 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session, select
 
-from ..db import get_session
+from .. import settings as structure_settings
+from ..db import DATA_DIR, get_session
 from ..models import (HIDDEN_STATUSES, PENDING, CONTRACT_TYPES, MEMBER_KINDS, MEMBER_STATUS, Contract, Event, Member,
                       PlayerStat, Team, User)
 from ..security import any_user, hash_password, staff_only
@@ -106,6 +107,9 @@ async def save_member(request: Request, member_id: int | None = None, user: User
     item.email, item.phone, item.discord = s(form, "email"), s(form, "phone"), s(form, "discord")
     item.nationality = s(form, "nationality")
     item.birth_date, item.joined_on = d(form, "birth_date"), d(form, "joined_on")
+    item.address, item.postal_city = s(form, "address"), s(form, "postal_city")
+    item.platform, item.rank = s(form, "platform"), s(form, "rank")
+    item.guardian_name, item.guardian_relation = s(form, "guardian_name"), s(form, "guardian_relation")
     item.notes = s(form, "notes")
     if item.email:
         item.email = item.email.lower()
@@ -152,10 +156,20 @@ def member_detail(member_id: int, request: Request, user: User = Depends(any_use
 # --- Contrats ---------------------------------------------------------------
 
 
+def _default_clauses(session, member):
+    team = session.get(Team, member.team_id) if member.team_id else None
+    return structure_settings.load(session).get(f"clauses_{team.game if team else 'cs2'}", "")
+
+
+def _contract_form(request, session, member, item):
+    return render(request, "members/contract_form.html", member=member, item=item,
+                  default_clauses=_default_clauses(session, member))
+
+
 @router.get("/{member_id}/contracts/new")
 def new_contract(member_id: int, request: Request, user: User = Depends(staff_only),
                  session: Session = Depends(get_session)):
-    return render(request, "members/contract_form.html", member=_get(session, member_id), item=None)
+    return _contract_form(request, session, _get(session, member_id), None)
 
 
 @router.get("/{member_id}/contracts/{contract_id}/edit")
@@ -164,7 +178,7 @@ def edit_contract(member_id: int, contract_id: int, request: Request, user: User
     item = session.get(Contract, contract_id)
     if not item or item.member_id != member_id:
         raise HTTPException(404)
-    return render(request, "members/contract_form.html", member=_get(session, member_id), item=item)
+    return _contract_form(request, session, _get(session, member_id), item)
 
 
 @router.post("/{member_id}/contracts/new")
@@ -177,18 +191,27 @@ async def save_contract(member_id: int, request: Request, contract_id: int | Non
                                                                           start_date=date.today())
     if not item or item.member_id != member.id:
         raise HTTPException(404)
+    before = (item.type, item.start_date, item.end_date, item.monthly_amount, item.notes, item.clauses)
     item.type = s(form, "type") if s(form, "type") in CONTRACT_TYPES else "salarie"
     item.start_date = d(form, "start_date") or date.today()
     item.end_date = d(form, "end_date")
     item.monthly_amount = f(form, "monthly_amount") or 0
     item.notes = s(form, "notes")
+    clauses = (form.get("clauses") or "").replace("\r\n", "\n").strip()
+    default = _default_clauses(session, member).strip()
+    item.clauses = clauses if clauses and clauses != default else None  # None = modèle de la structure
     if item.end_date and item.end_date < item.start_date:
         flash(request, "La date de fin doit être après la date de début.", "error")
-        return render(request, "members/contract_form.html", member=member, item=item)
+        return _contract_form(request, session, member, item)
+    after = (item.type, item.start_date, item.end_date, item.monthly_amount, item.notes, item.clauses)
+    if item.status == "signe" and contract_id and before != after:
+        item.status = "brouillon"
+        item.signed_name = item.signed_at = item.signed_ip = None
+        flash(request, "Le contrat signé a été modifié : la signature est annulée, renvoie-le au joueur.", "info")
     session.add(item)
     session.commit()
     flash(request, "Contrat enregistré.")
-    return redirect(f"/members/{member.id}")
+    return redirect(f"/contracts/{item.id}")
 
 
 @router.post("/{member_id}/contracts/{contract_id}/delete")
@@ -196,6 +219,8 @@ def delete_contract(member_id: int, contract_id: int, request: Request, user: Us
                     session: Session = Depends(get_session)):
     item = session.get(Contract, contract_id)
     if item and item.member_id == member_id:
+        if item.attachment:
+            (DATA_DIR / "contracts" / item.attachment).unlink(missing_ok=True)
         session.delete(item)
         session.commit()
         flash(request, "Contrat supprimé.")

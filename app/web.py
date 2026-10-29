@@ -58,6 +58,7 @@ templates.env.globals.update(
     EVENT_KINDS=models.EVENT_KINDS,
     TRANSACTION_CATEGORIES=models.TRANSACTION_CATEGORIES,
     SPONSOR_STATUS=models.SPONSOR_STATUS,
+    CONTRACT_STATUS=models.CONTRACT_STATUS,
     MONTHS_FULL=MONTHS_FULL,
     today=date.today,
     now=datetime.now,
@@ -74,6 +75,8 @@ def render(request: Request, name: str, **context):
         with Session(engine) as session:
             context["pending_count"] = session.exec(
                 select(func.count()).select_from(models.User).where(models.User.pending)).one()
+    from .settings import LOGO_PATH
+    context["has_logo"] = LOGO_PATH.is_file()
     context["signup_enabled"] = os.environ.get("ALLOW_SIGNUP", "1") not in ("0", "false", "non")
     context["flashes"] = request.session.pop("flashes", [])
     context["path"] = request.url.path

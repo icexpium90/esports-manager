@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Infos structure{% endblock %}
+{% block content %}
+<div class="top"><div><h1>Infos de la structure</h1><div class="sub">Reprises sur la couverture, dans les parties et les signatures des contrats PDF.</div></div>
+  <a class="btn" href="#modeles">Modèles de contrat ↓</a></div>
+<form method="post" class="stack" enctype="multipart/form-data">
+  <div class="card" style="max-width:860px">
+    <div class="head"><h2>Logo</h2></div>
+    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+      {% if info.has_logo %}<img src="/logo.png?v={{ range(1, 99999)|random }}" alt="Logo" style="max-width:220px;max-height:120px;background:#1b1d24;border-radius:10px;padding:10px">{% else %}<div class="muted small">Aucun logo pour l'instant.</div>{% endif %}
+      <div class="stack" style="gap:8px">
+        <label>{{ 'Remplacer le logo' if info.has_logo else 'Envoyer le logo' }} <span class="hint">PNG (fond transparent idéal) ou JPG</span><input type="file" name="logo" accept="image/png,image/jpeg"></label>
+        {% if info.has_logo %}<label class="check"><input type="checkbox" name="remove_logo"> Retirer le logo</label>{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="card" style="max-width:860px">
+    <div class="head"><h2>Identité</h2></div>
+    <div class="fields">
+      {% for key, label, help in fields %}
+        <label class="{{ 'full' if key in ('logo_caption', 'signature_place') }}">{{ label }}{% if help %} <span class="hint">{{ help }}</span>{% endif %}
+          <input name="{{ key }}" value="{{ info.get(key) or '' }}"></label>
+      {% endfor %}
+      <label class="full">Signataires pour la structure <span class="hint">{{ signatories_help }}</span>
+        <textarea name="signatories" style="min-height:70px" placeholder="M. Dupont — Co-Président | JEAN DUPONT&#10;Mme Martin — Co-Présidente | CLAIRE MARTIN">{{ info.get('signatories') or '' }}</textarea></label>
+    </div>
+  </div>
+  <div class="card" style="max-width:860px" id="modeles">
+    <div class="head"><h2>Modèles de contrat par jeu</h2></div>
+    <p class="small muted" style="margin-top:0">Chaque nouveau contrat reprend le modèle du jeu de l'équipe du joueur, puis reste modifiable contrat par contrat.
+      Une ligne « ARTICLE … » devient un titre, « a) » ou « • » un retrait. Variables : <code>{structure}</code> <code>{structure_court}</code> <code>{tag}</code> <code>{jeu}</code> <code>{JEU}</code> <code>{editeur}</code> <code>{duree}</code> <code>{date_debut}</code>.
+      Vide un champ pour revenir au modèle d'origine.</p>
+    <div class="stack">
+      {% for game, label in GAMES.items() %}
+        <details {{ 'open' if loop.first }}>
+          <summary style="cursor:pointer;font-weight:600;padding:6px 0">{{ label }}</summary>
+          <textarea name="clauses_{{ game }}" style="min-height:360px;font-size:.85rem;font-family:ui-monospace,Menlo,Consolas,monospace;margin-top:6px">{{ info.get('clauses_' ~ game) or '' }}</textarea>
+        </details>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-actions" style="max-width:860px"><button class="btn primary">Enregistrer</button></div>
+</form>
+{% endblock %}

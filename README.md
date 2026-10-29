@@ -37,6 +37,18 @@ Les joueurs s'inscrivent eux-mêmes via le lien « S'inscrire » de la page de c
 Leur compte reste bloqué jusqu'à validation par le staff dans **Inscriptions** (équipe, rôle et statut
 choisis à la validation). Pour désactiver les inscriptions : variable `ALLOW_SIGNUP=0`.
 
+## Contrats joueurs (PDF)
+
+1. **Infos structure** (administrateur) : logo, texte sous le logo, dénomination, siège, représentants,
+   signataires, lieu de signature, et un modèle d'articles par jeu (repris dans chaque nouveau contrat).
+2. Sur la fiche d'un membre : **+ Contrat**, puis **Envoyer au joueur**.
+3. Le joueur voit le contrat dans son espace, complète ses informations (adresse, date de naissance,
+   représentant légal s'il est mineur…) et signe en ligne en recopiant son nom.
+4. Tout le monde peut télécharger le PDF pré-rempli ; le staff peut aussi joindre une copie signée à la main.
+
+La signature en ligne est une signature électronique simple (nom, date, heure et adresse IP dans le PDF).
+Les modèles fournis sont indicatifs : à faire relire par un juriste.
+
 ## Mise en ligne
 
 Voir [deploy/README.md](deploy/README.md).

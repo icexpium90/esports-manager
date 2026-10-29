@@ -37,6 +37,9 @@ def dashboard(request: Request, user: User = Depends(any_user), session: Session
     results = session.exec(results_q.limit(6)).all()
 
     ctx = dict(upcoming=upcoming, results=results, teams=teams)
+    if user.member_id:
+        ctx["to_sign"] = session.exec(select(Contract).where(Contract.member_id == user.member_id,
+                                                             Contract.status == "envoye")).all()
 
     if user.role in ("admin", "staff"):
         soon = date.today() + timedelta(days=60)

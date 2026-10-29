@@ -22,6 +22,12 @@
       <label>Discord<input name="discord" value="{{ item.discord or '' }}"></label>
       <label>Nationalité<input name="nationality" value="{{ item.nationality or '' }}"></label>
       <label>Date de naissance<input type="date" name="birth_date" value="{{ item.birth_date or '' }}"></label>
+      <label>Adresse<input name="address" value="{{ item.address or '' }}" placeholder="N° et rue"></label>
+      <label>Code postal / Ville<input name="postal_city" value="{{ item.postal_city or '' }}"></label>
+      <label>Plateforme(s)<input name="platform" value="{{ item.platform or '' }}" placeholder="par défaut selon le jeu"></label>
+      <label>Rang actuel<input name="rank" value="{{ item.rank or '' }}"></label>
+      <label>Représentant légal <span class="hint">si mineur</span><input name="guardian_name" value="{{ item.guardian_name or '' }}"></label>
+      <label>Lien de parenté<input name="guardian_relation" value="{{ item.guardian_relation or '' }}"></label>
       <label class="full">Notes<textarea name="notes">{{ item.notes or '' }}</textarea></label>
       {% if is_new %}
       <label class="check full" id="account-box"><input type="checkbox" name="create_account" id="create_account" checked>

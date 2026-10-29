@@ -8,7 +8,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
 from .db import init_db
-from .routes import auth, calendar, dashboard, finances, members, signup, teams, users
+from .routes import auth, calendar, contracts, dashboard, finances, members, signup, teams, users
 from .security import Forbidden, LoginRequired, secret_key
 from .web import render, redirect
 
@@ -23,7 +23,7 @@ app.add_middleware(
 )
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
-for module in (auth, signup, dashboard, teams, members, calendar, finances, users):
+for module in (auth, signup, dashboard, teams, members, contracts, calendar, finances, users):
     app.include_router(module.router)
 
 
