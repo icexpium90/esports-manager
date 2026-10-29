@@ -69,6 +69,18 @@
   </div>
 
   {% if user.role != 'joueur' %}
+  {% if awaiting %}
+  <div class="card span2">
+    <div class="head"><h2>Contrats en attente de signature</h2><a class="small" href="/members">Membres</a></div>
+    <ul class="list">
+      {% for c, mem in awaiting %}
+      <li><div><a href="/contracts/{{ c.id }}"><strong>{{ mem.nickname }}</strong></a>
+        <span class="small muted">· {{ CONTRACT_TYPES[c.type] }} · à partir du {{ c.start_date|d }}</span></div>
+        <span class="badge warn">À signer</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
   <div class="card span2">
     <div class="head"><h2>Contrats qui se terminent (60 jours)</h2><a class="small" href="/members">Membres</a></div>
     {% if ending %}

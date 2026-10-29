@@ -11,6 +11,7 @@ from ..models import GAMES, HIDDEN_STATUSES, PENDING, Event, Member, PlayerStat,
 from ..security import any_user, staff_only
 from ..web import b, flash, redirect, render, s
 from .dashboard import visible_team_ids
+from .members import latest_contracts
 
 router = APIRouter(prefix="/teams")
 
@@ -105,7 +106,8 @@ def team_detail(team_id: int, request: Request, user: User = Depends(any_user),
                                  score=avg("score"), rating=avg("rating"), mvp=sum(1 for r in rows if r.mvp))
     return render(request, "teams/detail.html", team=team, members=members, upcoming=upcoming,
                   played=played[:10], record=team_record([e for e in played if e.kind == "officiel"]),
-                  scrim_record=team_record([e for e in played if e.kind == "scrim"]), averages=averages)
+                  scrim_record=team_record([e for e in played if e.kind == "scrim"]), averages=averages,
+                  contracts=latest_contracts(session) if user.role != "joueur" else {})
 
 
 def _get(session, team_id):

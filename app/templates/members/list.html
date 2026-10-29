@@ -30,7 +30,7 @@
         <td>{{ MEMBER_KINDS[p.kind] }}</td>
         <td>{{ p.game_role or '—' }}</td>
         <td>{{ m.status_badge(p.status) }}</td>
-        {% if user.role != 'joueur' %}<td>{% set c = current.get(p.id) %}{% if c %}{{ m.contract_badge(c) }}{% else %}<span class="muted small">Aucun</span>{% endif %}</td>{% endif %}
+        {% if user.role != 'joueur' %}<td>{{ m.contract_state(current.get(p.id)) }}</td>{% endif %}
       </tr>
     {% endfor %}</tbody>
   </table></div>

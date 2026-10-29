@@ -55,8 +55,12 @@ def dashboard(request: Request, user: User = Depends(any_user), session: Session
         all_txs = session.exec(select(Transaction)).all()
         balance = sum(t.amount if t.direction == "recette" else -t.amount for t in all_txs)
         members = session.exec(select(Member).where(Member.status.not_in(HIDDEN_STATUSES))).all()
+        awaiting = session.exec(
+            select(Contract, Member).join(Member, Member.id == Contract.member_id)
+            .where(Contract.status == "envoye").order_by(Contract.start_date)
+        ).all()
         ctx.update(
-            ending=ending, income=income, expense=expense, balance=balance,
+            awaiting=awaiting, ending=ending, income=income, expense=expense, balance=balance,
             player_count=sum(1 for m in members if m.kind in ("joueur", "remplacant")),
             staff_count=sum(1 for m in members if m.kind not in ("joueur", "remplacant")),
             team_count=sum(1 for t in teams.values() if t.active),

@@ -30,6 +30,18 @@
 <span class="score">{{ r[0] }}V – {{ r[1] }}D{% if r[2] %} – {{ r[2] }}N{% endif %}</span>
 {%- endmacro %}
 
+{% macro contract_state(c) -%}
+{% if c %}
+  {% set ended = c.end_date and c.end_date < today() %}
+  <a href="/contracts/{{ c.id }}" style="text-decoration:none">
+  {% if ended %}<span class="badge">Terminé</span>
+  {% elif c.status == 'signe' %}<span class="badge ok">✓ Signé</span>
+  {% elif c.status == 'envoye' %}<span class="badge warn">À signer</span>
+  {% else %}<span class="badge accent">Brouillon</span>{% endif %}</a>
+  {% if not ended and c.end_date and (c.end_date - today()).days <= 60 %}<span class="badge warn">Fin dans {{ (c.end_date - today()).days }} j</span>{% endif %}
+{% else %}<span class="muted small">Aucun</span>{% endif %}
+{%- endmacro %}
+
 {% macro contract_badge(c) -%}
 {% if c.end_date %}
   {% set days = (c.end_date - today()).days %}

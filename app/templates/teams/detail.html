@@ -27,7 +27,7 @@
   <div class="head"><h2>Roster</h2></div>
   {% if members %}
   <div class="table-wrap"><table>
-    <thead><tr><th>Pseudo</th><th>Rôle</th><th>Poste</th><th>Statut</th>
+    <thead><tr><th>Pseudo</th><th>Rôle</th><th>Poste</th><th>Statut</th>{% if user.role != 'joueur' %}<th>Contrat</th>{% endif %}
       <th class="num">Matchs</th><th class="num">{{ labels[0] }}</th><th class="num">{{ labels[1] }}</th><th class="num">{{ labels[2] }}</th><th class="num">{{ labels[3] }}</th><th class="num">Note</th><th class="num">MVP</th></tr></thead>
     <tbody>
     {% for p in members %}{% set a = averages.get(p.id) %}
@@ -36,6 +36,7 @@
         <td>{{ MEMBER_KINDS[p.kind] }}</td>
         <td>{{ p.game_role or '—' }}</td>
         <td>{{ m.status_badge(p.status) }}</td>
+        {% if user.role != 'joueur' %}<td class="nowrap">{{ m.contract_state(contracts.get(p.id)) }}</td>{% endif %}
         {% if a %}
         <td class="num">{{ a.games }}</td><td class="num">{{ ('%g' % a.stat1) if a.stat1 is not none else '—' }}</td><td class="num">{{ ('%g' % a.stat2) if a.stat2 is not none else '—' }}</td>
         <td class="num">{{ ('%g' % a.stat3) if a.stat3 is not none else '—' }}</td><td class="num">{{ ('%g' % a.score) if a.score is not none else '—' }}</td>

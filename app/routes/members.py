@@ -17,6 +17,20 @@ from .dashboard import visible_team_ids
 PLAYER_KINDS = ("joueur", "remplacant")
 
 
+def latest_contracts(session: Session) -> dict:
+    """Contrat le plus pertinent par membre : le plus récent encore valable (en cours ou à venir),
+    sinon le dernier terminé."""
+    today = date.today()
+    best = {}
+    for c in session.exec(select(Contract).order_by(Contract.start_date, Contract.id)).all():
+        valid = c.end_date is None or c.end_date >= today
+        prev = best.get(c.member_id)
+        prev_valid = prev is not None and (prev.end_date is None or prev.end_date >= today)
+        if prev is None or valid or not prev_valid:
+            best[c.member_id] = c
+    return best
+
+
 def linked_account(session: Session, member: Member):
     return session.exec(select(User).where(User.member_id == member.id)).first()
 
@@ -67,13 +81,7 @@ def list_members(request: Request, team: int | None = None, kind: str | None = N
     members = session.exec(q).all()
     teams = {t.id: t for t in teams_list(session)}
 
-    # Contrat en cours de chaque membre (staff seulement)
-    current = {}
-    if user.role != "joueur":
-        today = date.today()
-        for c in session.exec(select(Contract).order_by(Contract.start_date)).all():
-            if c.start_date <= today and (c.end_date is None or c.end_date >= today):
-                current[c.member_id] = c
+    current = latest_contracts(session) if user.role != "joueur" else {}
     return render(request, "members/list.html", members=members, teams=teams, current=current,
                   filters=dict(team=team, kind=kind, status=status))
 
