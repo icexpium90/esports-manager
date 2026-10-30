@@ -261,6 +261,11 @@ def build_contract_pdf(contract: Contract, member: Member, team: Team | None, in
     logo, logo_cover = _logo_paths()
     city = (info.get("postal_city") or "").split(",")[0].strip()
     address_line = ", ".join(x for x in (info.get("street"), city) if x)
+    # Paraphe électronique : initiales du joueur une fois le contrat signé en ligne
+    paraphe = ""
+    if contract.status == "signe" and contract.signed_at:
+        words = (contract.signed_name or "").replace("-", " ").split()
+        paraphe = ".".join(w[0].upper() for w in words if w) + "." if words else ""
 
     # --- Fonds de page ---
     def cover(c, doc):
@@ -334,7 +339,14 @@ def build_contract_pdf(contract: Contract, member: Member, team: Team | None, in
         _crosses(c, 452, 51, 9, 5.5)
         c.setFont("Pop", 6.2)
         c.setFillColor(colors.HexColor("#9A93A6"))
-        c.drawCentredString(PAGE_W / 2, 30, f"Réf. {ref}  ·  Document confidentiel  ·  Paraphe : ______")
+        left = f"Réf. {ref}  ·  Document confidentiel  ·  Paraphe : "
+        para = paraphe or "______"
+        width = pdfmetrics.stringWidth(left, "Pop", 6.2) + pdfmetrics.stringWidth(para, "Pop-B", 7)
+        x = PAGE_W / 2 - width / 2
+        c.drawString(x, 30, left)
+        c.setFont("Pop-B", 7)
+        c.setFillColor(PURPLE if paraphe else colors.HexColor("#9A93A6"))
+        c.drawString(x + pdfmetrics.stringWidth(left, "Pop", 6.2), 30, para)
         c.setFont("Pop-M", 8.5)
         c.setFillColor(INK)
         c.drawRightString(PAGE_W - 48, 30, str(doc.page))
