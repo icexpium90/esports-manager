@@ -46,6 +46,7 @@ choisis à la validation). Pour désactiver les inscriptions : variable `ALLOW_S
    représentant légal s'il est mineur…) et signe en ligne en recopiant son nom.
 4. Tout le monde peut télécharger le PDF pré-rempli ; le staff peut aussi joindre une copie signée à la main.
 
+Police Poppins (SIL Open Font License, voir app/fonts/OFL.txt).
 La signature en ligne est une signature électronique simple (nom, date, heure et adresse IP dans le PDF).
 Les modèles fournis sont indicatifs : à faire relire par un juriste.
 
